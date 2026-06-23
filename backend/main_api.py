@@ -1,8 +1,14 @@
 from fastapi import FastAPI
-from notes_service import analyze_notes
+from pydantic import BaseModel
+
+from services.chat_service import ask
+from services.notes_service import analyze_notes
+
 
 app = FastAPI()
 
+class ChatRequest(BaseModel):
+    question: str
 
 @app.get("/")
 def root():
@@ -37,3 +43,9 @@ def get_notes_calendar():
         "dates": dates,
         "events": events
     }
+
+
+@app.post("/chat")
+def post_chat(request: ChatRequest):
+    answer = ask(request.question)
+    return {"answer": answer}
