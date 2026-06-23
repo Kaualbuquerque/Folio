@@ -1,5 +1,5 @@
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
-from config import configure_settings, get_vector_store, NOTAS_DIR, COLLECTION_NAME, DATA_DIR
+from config import configure_settings, get_vector_store, NOTES_DIR, COLLECTION_NAME, DATA_DIR
 import chromadb
 
 configure_settings()
@@ -16,7 +16,7 @@ except Exception:
 _, _, vector_store, storage_context = get_vector_store()
 
 print("\nLendo e indexando suas notas...")
-documents = SimpleDirectoryReader(NOTAS_DIR).load_data()
+documents = SimpleDirectoryReader(NOTES_DIR).load_data()
 
 index = VectorStoreIndex.from_documents(
     documents,
