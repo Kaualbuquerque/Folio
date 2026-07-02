@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ChatMessage, ChatProps } from "../types/chat";
 import { parseAIResponse } from "../utils/chatUtils";
 import { ArrowBigUp, FileText, Moon, Sun } from "lucide-react";
+import UserMessage from "./UserMessage";
 
 function getGreeting(): string {
     const hour = new Date().getHours();
@@ -15,6 +16,8 @@ export default function Chat({ isDark, toggleTheme }: ChatProps) {
     const [question, setQuestion] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
+    const abortControllerRef = useRef<AbortController | null>(null)
+
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -22,6 +25,8 @@ export default function Chat({ isDark, toggleTheme }: ChatProps) {
 
     function handleSend() {
         if (!question.trim() || isLoading) return;
+
+        abortControllerRef.current = new AbortController();
 
         const userMessage: ChatMessage = { role: 'user', content: question };
         setHistory((prev) => [...prev, userMessage]);
@@ -31,7 +36,8 @@ export default function Chat({ isDark, toggleTheme }: ChatProps) {
         fetch('http://localhost:8000/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question })
+            body: JSON.stringify({ question: question.trim() }),
+            signal: abortControllerRef.current.signal,
         })
             .then((r) => r.json())
             .then((data) => {
@@ -42,6 +48,15 @@ export default function Chat({ isDark, toggleTheme }: ChatProps) {
                     sources,
                 };
                 setHistory((prev) => [...prev, aiMessage]);
+            }).catch((err) => {
+                if (err.name !== 'AbortError') {
+                    const errorMessage: ChatMessage = {
+                        role: 'assistant',
+                        content: 'Não foi possível obter uma resposta. Verifique se o servidor está rodando e tente novamente.',
+                        sources: [],
+                    };
+                    setHistory((prev) => [...prev, errorMessage]);
+                }
             })
             .finally(() => setIsLoading(false));
     }
@@ -54,8 +69,12 @@ export default function Chat({ isDark, toggleTheme }: ChatProps) {
     }
 
     function handleClear() {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
         setHistory([]);
         setQuestion('');
+        setIsLoading(false);
     }
 
     return (
@@ -75,7 +94,7 @@ export default function Chat({ isDark, toggleTheme }: ChatProps) {
             </div>
 
             {/* Área de mensagens */}
-            <div className="flex-1 overflow-y-auto px-8 py-6">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden px-8 py-6">
                 {history.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center max-w-lg mx-auto">
                         <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-6">
@@ -89,20 +108,18 @@ export default function Chat({ isDark, toggleTheme }: ChatProps) {
                         </p>
                     </div>
                 ) : (
-                    <div className="max-w-2xl mx-auto flex flex-col gap-6">
+                    <div className="max-w-5xl mx-auto flex flex-col gap-6 font-semibold">
                         {history.map((msg, i) => (
                             <div key={i}>
                                 {msg.role === 'user' ? (
-                                    <div className="flex justify-end">
-                                        <div className="bg-accent text-accent-foreground px-4 py-2.5 rounded-2xl rounded-tr-sm text-[14px] max-w-[70%]">
-                                            {msg.content}
-                                        </div>
-                                    </div>
+                                    <UserMessage content={msg.content} />
                                 ) : (
-                                    <div className="flex flex-col gap-3">
-                                        <p className="text-[14px] text-foreground leading-relaxed">
-                                            {msg.content}
-                                        </p>
+                                    <div className="flex flex-col gap-3 max-w-4xl text-justify">
+                                        {msg.content.split('\n').filter(line => line.trim() !== '').map((paragraph, i) => (
+                                            <p key={i} className="text-[14px] text-foreground leading-relaxed">
+                                                {paragraph}
+                                            </p>
+                                        ))}
                                         {msg.sources && msg.sources.length > 0 && (
                                             <div className="flex flex-col gap-2">
                                                 <span className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">
@@ -114,7 +131,7 @@ export default function Chat({ isDark, toggleTheme }: ChatProps) {
                                                             key={source}
                                                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-hairline text-[12px] text-foreground/60 hover:border-accent/40 hover:text-foreground/80 transition-colors"
                                                         >
-                                                            <span className="text-[11px]"><FileText size={22}/></span>
+                                                            <span className="text-[11px]"><FileText size={22} /></span>
                                                             {source}
                                                         </button>
                                                     ))}
@@ -140,20 +157,24 @@ export default function Chat({ isDark, toggleTheme }: ChatProps) {
             {/* Input */}
             <div className="px-8 py-4 border-t border-border-hairline">
                 <div className="max-w-2xl mx-auto">
-                    <div className="flex items-end gap-3 bg-surface-2 border border-border-hairline rounded-2xl px-4 py-3">
+                    <div className="flex items-center gap-3 bg-surface-2 border border-border-hairline rounded-2xl px-4 py-3">
                         <textarea
                             value={question}
-                            onChange={(e) => setQuestion(e.target.value)}
+                            onChange={(e) => {
+                                setQuestion(e.target.value);
+                                e.target.style.height = 'auto';
+                                e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+                            }}
                             onKeyDown={handleKeyDown}
                             placeholder="Pergunte algo sobre suas notas..."
                             rows={1}
-                            className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-foreground/30 resize-none outline-none leading-relaxed"
-                            style={{ maxHeight: '120px' }}
+                            className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-foreground/30 outline-none leading-relaxed overflow-y-scroll overflow-x-hidden hide-scrollbar resize-none align-middle"
+                            style={{ height: '24px', maxHeight: '120px' }}
                         />
                         <button
                             onClick={handleSend}
                             disabled={!question.trim() || isLoading}
-                            className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-accent-foreground cursor-pointer disabled:cursor-auto disabled:opacity-30 transition-opacity shrink-0"
+                            className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-accent-foreground cursor-pointer disabled:cursor-auto disabled:opacity-30 transition-opacity shrink-0"
                         >
                             <ArrowBigUp size={20} />
                         </button>

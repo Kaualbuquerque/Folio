@@ -13,3 +13,7 @@ export interface ChatProps {
     isDark: boolean;
     toggleTheme: () => void;
 }
+
+export interface UserMessageProps {
+    content: string;
+}
