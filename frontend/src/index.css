@@ -46,3 +46,12 @@ body {
     --font-sans: "Instrument Sans", sans-serif;
     --font-mono: "JetBrains Mono", monospace;
 }
+
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
