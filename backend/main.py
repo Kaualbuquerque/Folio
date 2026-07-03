@@ -1,64 +1,70 @@
-from llama_index.core import VectorStoreIndex
-from llama_index.vector_stores.chroma import ChromaVectorStore
-from llama_index.core.storage.storage_context import StorageContext
-from config import configure_settings, COLLECTION_NAME, DATA_DIR
-import chromadb
+from fastapi import FastAPI
+from pydantic import BaseModel
+from starlette.middleware.cors import CORSMiddleware
 
-configure_settings()
+from services.chat_service import ask, reset_chat_engine
+from services.notes_service import analyze_notes, reindex_notes
 
-# ── Carregar índice existente do ChromaDB
-chroma_client = chromadb.PersistentClient(path=DATA_DIR)
+app = FastAPI()
 
-try:
-    chroma_collection = chroma_client.get_collection(COLLECTION_NAME)
-except Exception:
-    print("Nenhum índice encontrado.")
-    print("Rode primeiro: python indexer.py")
-    exit()
-
-vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
-storage_context = StorageContext.from_defaults(vector_store=vector_store)
-index = VectorStoreIndex.from_vector_store(
-    vector_store,
-    storage_context=storage_context
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-total_notas = chroma_collection.count()
-print(f"✓ Índice carregado — {total_notas} chunk(s) indexado(s).\n")
 
-# ── Motor de consulta
-SYSTEM_PROMPT = """Você é o assistente pessoal de inteligência artificial do cofre de notas do usuário.
-Responda à pergunta utilizando estritamente o contexto das notas fornecidas.
+class ChatRequest(BaseModel):
+    question: str
 
-Diretrizes obrigatórias:
-1. Se a resposta não puder ser encontrada nas notas, diga exatamente:
-   "Desculpe, não encontrei essa informação nas suas notas do Obsidian."
-2. Ao final de toda resposta, liste obrigatoriamente os arquivos usados como fonte no formato:
-   Fontes: [[nome-da-nota-1]], [[nome-da-nota-2]]"""
 
-chat_engine = index.as_chat_engine(
-    chat_mode="context",
-    system_prompt=SYSTEM_PROMPT,
-    similarity_top_k=3,
-    verbose=False
-)
+@app.get("/")
+def root():
+    return {"status": "Obsidius API rodando"}
 
-# ── Loop de chat
-print("=" * 50)
-print("Obsidian AI — Digite 'sair' para encerrar")
-print("=" * 50)
 
-while True:
-    pergunta = input("\nVocê: ").strip()
+@app.get("/notes/stats")
+def get_notes_stats():
+    data = analyze_notes()
+    return {
+        "total": data["total"],
+        "orphans": data["orphans"],
+        "tags": data["tags"],
+    }
 
-    if not pergunta:
-        continue
 
-    if pergunta.lower() in ["sair", "exit", "quit"]:
-        print("Encerrando...")
-        break
+@app.get("/notes/calendar")
+def get_notes_calendar():
+    data = analyze_notes()
 
-    print("\nIA: Buscando nas suas notas...\n")
-    resposta = chat_engine.chat(pergunta)
-    print(f"IA: {resposta}\n")
-    print("-" * 50)
+    dates = {
+        note: creation_date.isoformat()
+        for note, creation_date in data["creation_dates"].items()
+    }
+
+    events = {
+        event_date.isoformat(): description
+        for event_date, description in data["events"].items()
+    }
+
+    return {
+        "dates": dates,
+        "events": events
+    }
+
+
+@app.post("/chat")
+def post_chat(request: ChatRequest):
+    answer = ask(request.question)
+    return {"answer": answer}
+
+
+@app.post("/reindex")
+def post_reindex():
+    total = reindex_notes()
+    reset_chat_engine()
+    return {
+        "status": "Success",
+        "total_indexed": total,
+    }
