@@ -9,6 +9,7 @@ from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
 from config import configure_settings, get_vector_store, NOTES_DIR, DATA_DIR, COLLECTION_NAME
 
 
+# ── Auxiliary functions
 def read_frontmatter(path: Path) -> dict:
     try:
         text = Path(path).read_text(encoding="utf-8")
@@ -29,6 +30,24 @@ def read_frontmatter(path: Path) -> dict:
     return {}
 
 
+def format_date(d: date) -> str:
+    return d.strftime("%Y-%m-%d")
+
+
+def note_template(title: str = "Nova nota") -> str:
+    today = format_date(date.today())
+    return f"""---
+    tags: []
+    compromisso: 
+    date: {today}
+    ---
+    
+    # {title}
+    
+    """
+
+
+# ── Vault analysis
 def analyze_notes() -> dict:
     notes_dir = Path(NOTES_DIR)
     files = list(notes_dir.glob("**/*.md"))
@@ -92,3 +111,82 @@ def reindex_notes() -> int:
     )
 
     return len(documents)
+
+
+# ── Notes CRUD
+def list_notes() -> list[dict]:
+    notes_dir = Path(NOTES_DIR)
+    files = list(notes_dir.glob("**/*.md"))
+
+    notes = []
+    for file in files:
+        stat = file.stat()
+        notes.append({
+            "title": file.stem,
+            "created_at": date.fromtimestamp(stat.st_ctime).isoformat(),
+        })
+
+    notes.sort(key=lambda x: x["created_at"], reverse=True)
+    return notes
+
+
+def get_note(title: str) -> dict | None:
+    notes_dir = Path(NOTES_DIR)
+    file = notes_dir / f"{title}.md"
+
+    if not file.exists():
+        return None
+
+    content = file.read_text(encoding="utf-8")
+    frontmatter = {}
+    body = content
+
+    start = content.find("---")
+    if start == -1:
+        end = content.find("---", start + 3)
+        if end != -1:
+            raw = content[start + 3:end]
+            normalize = re.sub(r':(?=\S)', ': ', raw)
+            result = yaml.safe_load(normalize)
+            if isinstance(result, dict):
+                frontmatter = result
+            body = content[end + 3:].strip()
+
+    return {
+        "title": title,
+        "content": body,
+        "frontmatter": frontmatter,
+        "tags": frontmatter.get("tags", []),
+    }
+
+
+def create_note(title: str, content: str | None = None) -> dict:
+    notes_dir = Path(NOTES_DIR)
+    file = notes_dir / f"{title}.md"
+
+    text = content if content is not None else note_template(title)
+    file.write_text(text, encoding="utf-8")
+
+    return {"title": title, "status": "created"}
+
+
+def update_note(title: str, content: str) -> dict | None:
+    notes_dir = Path(NOTES_DIR)
+    file = notes_dir / f"{title}.md"
+
+    if not file.exists():
+        return None
+
+    file.write_text(content, encoding="utf-8")
+    return {"title": title, "status": "updated"}
+
+
+def delete_note(title: str) -> dict | None:
+    notes_dir = Path(NOTES_DIR)
+    file = notes_dir / f"{title}.md"
+
+    if not file.exists():
+        return None
+
+    file.unlink()
+    return {"title": title, "status": "deleted"}
