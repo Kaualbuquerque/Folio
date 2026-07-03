@@ -1,9 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
+from schemas import ChatRequest, NoteCreateRequest, NoteUpdateRequest
 from services.chat_service import ask, reset_chat_engine
-from services.notes_service import analyze_notes, reindex_notes
+from services.notes_service import analyze_notes, reindex_notes, list_notes, get_note, create_note, update_note
 
 app = FastAPI()
 
@@ -13,11 +14,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-class ChatRequest(BaseModel):
-    question: str
-
 
 @app.get("/")
 def root():
@@ -68,3 +64,34 @@ def post_reindex():
         "status": "Success",
         "total_indexed": total,
     }
+
+
+@app.get("/notes")
+def get_notes():
+    return list_notes()
+
+@app.get("/notes/{title}")
+def get_note_by_title(title: str):
+    note = get_note(title)
+    if note is None:
+        raise HTTPException(status_code=404, detail="Nota não encotontrada")
+
+    return note
+
+@app.post("/notes")
+def post_notes(request: NoteCreateRequest):
+    return create_note(request.title, request.content)
+
+@app.put("/notes/{title}")
+def put_note(title: str, request: NoteUpdateRequest):
+    result = update_note(title, request.content)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Nota não encontrada")
+    return result
+
+@app.delete("/notes/{title}")
+def delete_note(title: str):
+    result = delete_note(title)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Nota não encontrada")
+    return result
