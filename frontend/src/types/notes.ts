@@ -36,7 +36,7 @@ export interface NoteEditorProps {
 }
 
 export interface VaultData {
-    stats: NotesStats | null;
+    stats: NotesStats;
     calendar: NotesCalendar | null;
     notes: Notes[];
     isLoading: boolean;

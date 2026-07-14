@@ -78,7 +78,7 @@ export default function Chat({ isDark, toggleTheme, onNoteSelect }: ChatProps) {
     }
 
     return (
-        <div className="flex-1 flex flex-col h-screen bg-background">
+        <div className="h-full flex flex-col bg-background">
 
             {/* Header */}
             <div className="flex items-center justify-between px-8 py-4 border-b border-border-hairline">
@@ -108,7 +108,7 @@ export default function Chat({ isDark, toggleTheme, onNoteSelect }: ChatProps) {
                         </p>
                     </div>
                 ) : (
-                    <div className="max-w-5xl mx-auto flex flex-col gap-6 font-semibold">
+                    <div className="max-w-5xl mx-auto flex flex-col gap-6 font-semibold custom-scrollbar">
                         {history.map((msg, i) => (
                             <div key={i}>
                                 {msg.role === 'user' ? (

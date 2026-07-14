@@ -53,14 +53,14 @@ const Sidebar = forwardRef<SidebarHandle, SideBarProps>(({ stats, calendar, note
 
     if (isLoading) {
         return (
-            <aside className="w-90 h-screen bg-surface/40 border-r border-border-hairline flex items-center justify-center">
+            <aside className="bg-surface/40 border-r border-border-hairline flex items-center justify-center">
                 <p className="text-[13px] text-foreground/40">Carregando...</p>
             </aside>
         );
     }
 
     return (
-        <aside className="w-90 h-screen bg-surface/40 border-r border-border-hairline flex flex-col p-6">
+        <aside className="h-full bg-surface/40 border-r border-border-hairline flex flex-col p-6 overflow-y-auto custom-scrollbar">
             <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-accent" />

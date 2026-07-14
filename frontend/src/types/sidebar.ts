@@ -1,7 +1,7 @@
 import type { Notes, NotesCalendar, NotesStats } from "./notes";
 
 export interface SideBarProps {
-    stats: NotesStats | null;
+    stats: NotesStats;
     calendar: NotesCalendar | null;
     notes: Notes[];
     isLoading: boolean;
