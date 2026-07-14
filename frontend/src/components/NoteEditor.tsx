@@ -129,7 +129,7 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted }
 
 
     return (
-        <aside className="w-105 h-screen bg-surface/30 border-l border-border-hairline flex flex-col">
+        <aside className="h-full bg-surface/30 border-l border-border-hairline flex flex-col">
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border-hairline">
@@ -227,7 +227,7 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted }
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="Escreva sua nota em Markdown..."
-                    className="w-full h-full bg-transparent font-mono text-[13px] text-foreground/80 placeholder:text-foreground/30 outline-none resize-none leading-relaxed"
+                    className="w-full h-full bg-transparent font-mono text-[13px] text-foreground/80 placeholder:text-foreground/30 outline-none resize-none leading-relaxed custom-scrollbar"
                 />
             </div>
 
