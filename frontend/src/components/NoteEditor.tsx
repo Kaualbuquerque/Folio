@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import type { NoteDetail, NoteEditorProps } from "../types/notes";
 import { Save, Trash2, X } from "lucide-react";
 import { maskDate } from "../utils/dateUtils";
+import MarkdownEditor from "./MarkdownEditor";
 
-export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted }: NoteEditorProps) {
+export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, isDark }: NoteEditorProps) {
     const isNew = selectedNote === '__new__';
 
     const [title, setTitle] = useState('');
@@ -223,11 +224,9 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted }
 
             {/* Body */}
             <div className="flex-1 px-6 py-4 overflow-hidden">
-                <textarea
+                <MarkdownEditor
                     value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Escreva sua nota em Markdown..."
-                    className="w-full h-full bg-transparent font-mono text-[13px] text-foreground/80 placeholder:text-foreground/30 outline-none resize-none leading-relaxed custom-scrollbar"
+                    onChange={setContent}
                 />
             </div>
 

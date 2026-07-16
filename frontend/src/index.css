@@ -79,3 +79,100 @@ body {
         background-clip: padding-box;
     }
 }
+
+.milkdown-editor {
+    height: 100%;
+    width: 100%;
+}
+
+.milkdown-editor .ProseMirror {
+    color: var(--color-foreground);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.7;
+    outline: none;
+    height: 100%;
+    width: 100%;
+    cursor: text;
+    padding-bottom: 4rem;
+}
+
+.milkdown-editor .ProseMirror:focus,
+.milkdown-editor .ProseMirror-focused {
+    outline: none;
+    border: none;
+    box-shadow: none;
+}
+
+.milkdown-editor .ProseMirror h1,
+.milkdown-editor .ProseMirror h2,
+.milkdown-editor .ProseMirror h3,
+.milkdown-editor .ProseMirror h4 {
+    font-family: var(--font-serif);
+    color: var(--color-foreground);
+    font-weight: 600;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+
+.milkdown-editor .ProseMirror h1 {
+    font-size: 1.6em;
+}
+
+.milkdown-editor .ProseMirror h2 {
+    font-size: 1.4em;
+}
+
+.milkdown-editor .ProseMirror h3 {
+    font-size: 1.2em;
+}
+
+.milkdown-editor .ProseMirror p {
+    margin: 0.5em 0;
+    color: var(--color-foreground);
+}
+
+.milkdown-editor .ProseMirror strong {
+    color: var(--color-foreground);
+    font-weight: 600;
+}
+
+.milkdown-editor .ProseMirror em {
+    color: var(--color-foreground);
+}
+
+.milkdown-editor .ProseMirror ul,
+.milkdown-editor .ProseMirror ol {
+    padding-left: 1.4em;
+    list-style: decimal;
+    color: var(--color-foreground);
+}
+
+.milkdown-editor .ProseMirror ul {
+    list-style: disc;
+}
+
+.milkdown-editor .ProseMirror li {
+    margin: 0.2em 0;
+}
+
+.milkdown-editor .ProseMirror blockquote {
+    border-left: 2px solid var(--color-accent);
+    padding-left: 1em;
+    color: var(--color-foreground);
+    opacity: 0.8;
+}
+
+.milkdown-editor .ProseMirror code {
+    background: var(--color-surface-2);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.markdown-syntax-marker {
+    color: var(--color-muted-foreground);
+    opacity: 0.5;
+    font-family: var(--font-mono);
+    user-select: none;
+}

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChatMessage, ChatProps } from "../types/chat";
 import { parseAIResponse } from "../utils/chatUtils";
-import { ArrowUp, FileText, Moon, Sun } from "lucide-react";
+import { ArrowUp, Eraser, FileText, Moon, Sun } from "lucide-react";
 import UserMessage from "./UserMessage";
 
 function getGreeting(): string {
@@ -84,17 +84,18 @@ export default function Chat({ isDark, toggleTheme, onNoteSelect }: ChatProps) {
             <div className="flex items-center justify-between px-8 py-4 border-b border-border-hairline">
                 <span className="text-[13px] text-foreground/60">Conversa</span>
                 <div className="flex items-center gap-4">
-                    <button onClick={toggleTheme} className="text-foreground/40 hover:text-foreground/80 transition-colors text-[18px]">
+                    <button onClick={toggleTheme} className="text-foreground/40 hover:text-foreground/80 transition-colors text-[18px] cursor-pointer">
                         {isDark ? <Sun size={18} /> : <Moon size={20} />}
                     </button>
-                    <button onClick={handleClear} className="flex items-center gap-1.5 text-[13px] text-foreground/40 hover:text-foreground/80 transition-colors">
-                        Limpar
+                    <button onClick={handleClear} className="flex items-center gap-1.5 text-[13px] text-foreground/40 hover:text-foreground/80 transition-colors cursor-pointer">
+                        <Eraser size={18} />
+                        <span>Limpar</span>
                     </button>
                 </div>
             </div>
 
             {/* Área de mensagens */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden px-8 py-6">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden px-8 py-6  custom-scrollbar">
                 {history.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center max-w-lg mx-auto">
                         <div className="w-12 h-12 rounded-[15px] bg-accent/10 flex items-center justify-center mb-6 border border-accent">
@@ -108,7 +109,7 @@ export default function Chat({ isDark, toggleTheme, onNoteSelect }: ChatProps) {
                         </p>
                     </div>
                 ) : (
-                    <div className="max-w-5xl mx-auto flex flex-col gap-6 font-semibold custom-scrollbar">
+                    <div className="max-w-5xl mx-auto flex flex-col gap-6 font-semibold">
                         {history.map((msg, i) => (
                             <div key={i}>
                                 {msg.role === 'user' ? (
