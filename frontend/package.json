@@ -13,8 +13,16 @@
     "electron:dev": "concurrently \"npm run dev\" \"npm run electron:build && electron .\""
   },
   "dependencies": {
+    "@milkdown/core": "^7.21.3",
+    "@milkdown/plugin-automd": "^7.21.3",
+    "@milkdown/plugin-listener": "^7.21.3",
+    "@milkdown/preset-commonmark": "^7.21.3",
+    "@milkdown/react": "^7.21.3",
+    "@milkdown/theme-nord": "^7.21.3",
+    "@milkdown/utils": "^7.21.3",
     "@tailwindcss/vite": "^4.3.1",
     "lucide-react": "^1.23.0",
+    "prosemirror-state": "^1.4.4",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-resizable-panels": "^4.12.2",
