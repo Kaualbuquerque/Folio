@@ -17,13 +17,20 @@ DATA_DIR = "./data"
 COLLECTION_NAME = "obsidian_notes"
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 LLM_MODEL = "llama-3.3-70b-versatile"
+_settings_configured = False
 
 
 def configure_settings():
+    global _settings_configured
+    if _settings_configured:
+        return
+
     llm = Groq(model=LLM_MODEL, api_key=GROQ_API_KEY)
     embed_model = HuggingFaceEmbedding(model_name=EMBEDDING_MODEL)
     Settings.llm = llm
     Settings.embed_model = embed_model
+
+    _settings_configured = True
 
 
 def get_vector_store():

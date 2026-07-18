@@ -1,4 +1,6 @@
 import re
+
+import time
 import yaml
 import chromadb
 from datetime import date
@@ -217,3 +219,45 @@ def rename_note(old_title: str, new_title: str) -> dict | None:
     old_file.unlink()
 
     return {"old_title": old_title, "new_title": new_title, "status": "renamed"}
+
+
+def index_single_note(title: str) -> None:
+    t0 = time.time()
+    configure_settings()
+    print(f"configure_settings: {time.time() - t0:.2f}s")
+
+    t1 = time.time()
+    _, chroma_collection, vector_store, storage_context = get_vector_store()
+    print(f"get_vector_store: {time.time() - t1:.2f}s")
+
+    note_path = Path(NOTES_DIR) / f"{title}.md"
+    if not note_path.exists():
+        return
+
+    t2 = time.time()
+    document = SimpleDirectoryReader(input_files=[str(note_path)]).load_data()[0]
+    print(f"load_data: {time.time() - t2:.2f}s")
+
+    try:
+        chroma_collection.delete(where={"file_name": f"{title}.md"})
+    except Exception:
+        pass
+
+    t3 = time.time()
+    index = VectorStoreIndex.from_vector_store(vector_store, storage_context=storage_context)
+    print(f"from_vector_store: {time.time() - t3:.2f}s")
+
+    t4 = time.time()
+    index.insert(document)
+    print(f"insert: {time.time() - t4:.2f}s")
+
+
+def remove_note_from_index(title: str) -> None:
+    configure_settings()
+    _, chroma_collection, _, _ = get_vector_store()
+
+    try:
+        chroma_collection.delete(where={"file_name": f"{title}.md"})
+    except Exception as e:
+        print(f"error deleting collection: {e}")
+        pass
