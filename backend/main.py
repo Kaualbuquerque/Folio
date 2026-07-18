@@ -1,15 +1,21 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 
-from config import NOTES_DIR
+from config import NOTES_DIR, configure_settings
 from schemas import ChatRequest, NoteCreateRequest, NoteUpdateRequest, NoteRenameRequest
 from services.chat_service import ask, reset_chat_engine
 from services.notes_service import analyze_notes, reindex_notes, list_notes, get_note, create_note, update_note, \
-    delete_note, rename_note
+    delete_note, rename_note, index_single_note, remove_note_from_index
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    configure_settings()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,7 +27,7 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {"status": "Obsidius API rodando"}
+    return {"status": "API running"}
 
 
 @app.get("/notes/stats")
@@ -79,21 +85,26 @@ def get_notes():
 def get_note_by_title(title: str):
     note = get_note(title)
     if note is None:
-        raise HTTPException(status_code=404, detail="Nota não encotontrada")
+        raise HTTPException(status_code=404, detail="Note not found")
 
     return note
 
 
 @app.post("/notes")
-def post_notes(request: NoteCreateRequest):
-    return create_note(request.title, request.content)
+def create_note_route(request: NoteCreateRequest):
+    result = create_note(request.title, request.content)
+    index_single_note(request.title)
+    reset_chat_engine()
+    return result
 
 
 @app.put("/notes/{title}")
 def update_note_by_title(title: str, request: NoteUpdateRequest):
     result = update_note(title, request.content)
     if result is None:
-        raise HTTPException(status_code=404, detail="Nota não encontrada")
+        raise HTTPException(status_code=404, detail="Note not found")
+    index_single_note(title)
+    reset_chat_engine()
     return result
 
 
@@ -101,7 +112,9 @@ def update_note_by_title(title: str, request: NoteUpdateRequest):
 def delete_note_by_title(title: str):
     result = delete_note(title)
     if result is None:
-        raise HTTPException(status_code=404, detail="Nota não encontrada")
+        raise HTTPException(status_code=404, detail="Note not found")
+    remove_note_from_index(title)
+    reset_chat_engine()
     return result
 
 
@@ -114,6 +127,9 @@ def rename_note_by_title(title: str, request: NoteRenameRequest):
     if "error" in result:
         raise HTTPException(status_code=409, detail=result["error"])
 
+    remove_note_from_index(title)
+    index_single_note(request.new_title)
+    reset_chat_engine()
     return result
 
 
