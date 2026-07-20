@@ -1,17 +1,18 @@
 import time
 from pathlib import Path
 from watchdog.observers import Observer
-
 from watchdog.events import FileSystemEventHandler
 
-from config import NOTES_DIR
+import config
 from services.chat_service import reset_chat_engine
 from services.notes_service import index_single_note, remove_note_from_index
+
+_ignore_next_event: set[str] = set()
 
 
 class NotesEventHandler(FileSystemEventHandler):
     def __init__(self):
-        self._last_event_time = dict[str, float] = {}
+        self._last_event_time: dict[str, float] = {}
         self._debounce_seconds = 1.0
 
     def _should_process(self, path: str) -> bool:
@@ -23,29 +24,38 @@ class NotesEventHandler(FileSystemEventHandler):
         return True
 
     def on_created(self, event):
+        title = Path(str(event.src_path)).stem
         if event.is_directory or not event.src_path.endswith(".md"):
+            return
+        if title in _ignore_next_event:
+            _ignore_next_event.discard(title)
             return
         if not self._should_process(str(event.src_path)):
             return
-        title = Path(str(event.src_path)).stem
         print(f"[watchdog] Note created: {title}")
         index_single_note(title)
         reset_chat_engine()
 
     def on_modified(self, event):
+        title = Path(str(event.src_path)).stem
         if event.is_directory or not event.src_path.endswith('.md'):
+            return
+        if title in _ignore_next_event:
+            _ignore_next_event.discard(title)
             return
         if not self._should_process(str(event.src_path)):
             return
-        title = Path(str(event.src_path)).stem
         print(f"[watchdog] Note modified: {title}")
         index_single_note(title)
         reset_chat_engine()
 
-    def on_delete(self, event):
+    def on_deleted(self, event):
+        title = Path(str(event.src_path)).stem
         if event.is_directory or not event.src_path.endswith('.md'):
             return
-        title = Path(str(event.src_path)).stem
+        if title in _ignore_next_event:
+            _ignore_next_event.discard(title)
+            return
         print(f"[watchdog] Note deleted: {title}")
         remove_note_from_index(title)
         reset_chat_engine()
@@ -67,15 +77,15 @@ _observer: Observer | None = None
 
 def start_watchdog():
     global _observer
-    if _observer is None:
+    if _observer is not None:
         return
 
     handler = NotesEventHandler()
     observer = Observer()
-    observer.schedule(handler, path=NOTES_DIR, recursive=True)
+    observer.schedule(handler, path=config.NOTES_DIR, recursive=True)
     observer.start()
     _observer = observer
-    print(f"[watchdog] Watching: {NOTES_DIR}")
+    print(f"[watchdog] Watching: {config.NOTES_DIR}")
 
 
 def stop_watchdog():
@@ -84,3 +94,7 @@ def stop_watchdog():
         _observer.stop()
         _observer.join()
         _observer = None
+
+
+def ignore_next_event(title: str) -> None:
+    _ignore_next_event.add(title)
