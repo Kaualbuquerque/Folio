@@ -1,6 +1,4 @@
 import re
-
-import time
 import yaml
 import chromadb
 from datetime import date
@@ -8,10 +6,10 @@ from pathlib import Path
 
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
 
-from config import configure_settings, get_vector_store, NOTES_DIR, DATA_DIR, COLLECTION_NAME
+import config
+from config import configure_settings, get_vector_store, DATA_DIR, COLLECTION_NAME
 
 
-# ── Auxiliary functions
 def read_frontmatter(path: Path) -> dict:
     try:
         text = Path(path).read_text(encoding="utf-8")
@@ -27,7 +25,8 @@ def read_frontmatter(path: Path) -> dict:
         if not isinstance(result, dict):
             return {}
         return {k.lower(): v for k, v in result.items()}
-    except Exception:
+    except Exception as e:
+        print(f"error reading frontmatter: {e}")
         pass
     return {}
 
@@ -39,19 +38,18 @@ def format_date(d: date) -> str:
 def note_template(title: str = "Nova nota") -> str:
     today = format_date(date.today())
     return f"""---
-    Tags: []
-    Compromisso: 
-    Date: {today}
-    ---
-    
-    # {title}
-    
-    """
+Tags: []
+compromisso: 
+date: {today}
+---
+
+# {title}
+
+"""
 
 
-# ── Vault analysis
 def analyze_notes() -> dict:
-    notes_dir = Path(NOTES_DIR)
+    notes_dir = Path(config.NOTES_DIR)
     files = list(notes_dir.glob("**/*.md"))
 
     total = len(files)
@@ -102,10 +100,9 @@ def reindex_notes() -> int:
         chroma_client.delete_collection(COLLECTION_NAME)
     except Exception as e:
         print(f"error deleting collection: {e}")
-        pass
 
     _, _, vector_store, storage_context = get_vector_store()
-    documents = SimpleDirectoryReader(NOTES_DIR).load_data()
+    documents = SimpleDirectoryReader(config.NOTES_DIR).load_data()
 
     VectorStoreIndex.from_documents(
         documents,
@@ -115,9 +112,8 @@ def reindex_notes() -> int:
     return len(documents)
 
 
-# ── Notes CRUD
 def list_notes() -> list[dict]:
-    notes_dir = Path(NOTES_DIR)
+    notes_dir = Path(config.NOTES_DIR)
     files = list(notes_dir.glob("**/*.md"))
 
     notes = []
@@ -140,7 +136,7 @@ def list_notes() -> list[dict]:
 
 
 def get_note(title: str) -> dict | None:
-    notes_dir = Path(NOTES_DIR)
+    notes_dir = Path(config.NOTES_DIR)
     file = notes_dir / f"{title}.md"
 
     if not file.exists():
@@ -170,7 +166,7 @@ def get_note(title: str) -> dict | None:
 
 
 def create_note(title: str, content: str | None = None) -> dict:
-    notes_dir = Path(NOTES_DIR)
+    notes_dir = Path(config.NOTES_DIR)
     file = notes_dir / f"{title}.md"
 
     text = content if content is not None else note_template(title)
@@ -180,7 +176,7 @@ def create_note(title: str, content: str | None = None) -> dict:
 
 
 def update_note(title: str, content: str) -> dict | None:
-    notes_dir = Path(NOTES_DIR)
+    notes_dir = Path(config.NOTES_DIR)
     file = notes_dir / f"{title}.md"
 
     if not file.exists():
@@ -191,7 +187,7 @@ def update_note(title: str, content: str) -> dict | None:
 
 
 def delete_note(title: str) -> dict | None:
-    notes_dir = Path(NOTES_DIR)
+    notes_dir = Path(config.NOTES_DIR)
     file = notes_dir / f"{title}.md"
 
     if not file.exists():
@@ -202,7 +198,7 @@ def delete_note(title: str) -> dict | None:
 
 
 def rename_note(old_title: str, new_title: str) -> dict | None:
-    notes_dir = Path(NOTES_DIR)
+    notes_dir = Path(config.NOTES_DIR)
     old_file = notes_dir / f"{old_title}.md"
     new_file = notes_dir / f"{new_title}.md"
 
@@ -213,43 +209,32 @@ def rename_note(old_title: str, new_title: str) -> dict | None:
         return {"error": "file already exists"}
 
     content = old_file.read_text(encoding="utf-8")
-    update_content = re.sub(r'^#\s+.+', f'#{new_title}', content, count=1, flags=re.MULTILINE)
+    updated_content = re.sub(r'^#\s+.+', f'# {new_title}', content, count=1, flags=re.MULTILINE)
 
-    new_file.write_text(update_content, encoding="utf-8")
+    new_file.write_text(updated_content, encoding="utf-8")
     old_file.unlink()
 
     return {"old_title": old_title, "new_title": new_title, "status": "renamed"}
 
 
 def index_single_note(title: str) -> None:
-    t0 = time.time()
     configure_settings()
-    print(f"configure_settings: {time.time() - t0:.2f}s")
-
-    t1 = time.time()
     _, chroma_collection, vector_store, storage_context = get_vector_store()
-    print(f"get_vector_store: {time.time() - t1:.2f}s")
 
-    note_path = Path(NOTES_DIR) / f"{title}.md"
+    note_path = Path(config.NOTES_DIR) / f"{title}.md"
     if not note_path.exists():
         return
 
-    t2 = time.time()
     document = SimpleDirectoryReader(input_files=[str(note_path)]).load_data()[0]
-    print(f"load_data: {time.time() - t2:.2f}s")
 
     try:
         chroma_collection.delete(where={"file_name": f"{title}.md"})
-    except Exception:
+    except Exception as e:
+        print(f"error deleting collection: {e}")
         pass
 
-    t3 = time.time()
     index = VectorStoreIndex.from_vector_store(vector_store, storage_context=storage_context)
-    print(f"from_vector_store: {time.time() - t3:.2f}s")
-
-    t4 = time.time()
     index.insert(document)
-    print(f"insert: {time.time() - t4:.2f}s")
 
 
 def remove_note_from_index(title: str) -> None:
@@ -260,4 +245,3 @@ def remove_note_from_index(title: str) -> None:
         chroma_collection.delete(where={"file_name": f"{title}.md"})
     except Exception as e:
         print(f"error deleting collection: {e}")
-        pass

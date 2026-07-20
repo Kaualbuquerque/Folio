@@ -7,13 +7,19 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 import chromadb
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.core.storage.storage_context import StorageContext
+from vault_settings import get_vault_path
 
 load_dotenv()
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
+
+def get_notes_dir() -> str:
+    return get_vault_path()
+
+
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-NOTES_DIR = "./test_notes"
 DATA_DIR = "./data"
+NOTES_DIR = get_notes_dir()
 COLLECTION_NAME = "Folio_notes"
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 LLM_MODEL = "llama-3.3-70b-versatile"

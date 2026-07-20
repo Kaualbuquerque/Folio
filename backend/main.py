@@ -2,14 +2,21 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
+import config
 from config import NOTES_DIR, configure_settings
-from monitor import start_watchdog, stop_watchdog
+from monitor import start_watchdog, stop_watchdog, ignore_next_event
 from schemas import ChatRequest, NoteCreateRequest, NoteUpdateRequest, NoteRenameRequest
+from vault_settings import get_vault_path, set_vault_path
 from services.chat_service import ask, reset_chat_engine
 from services.notes_service import analyze_notes, reindex_notes, list_notes, get_note, create_note, update_note, \
     delete_note, rename_note, index_single_note, remove_note_from_index
+
+
+class VaultPathRequest(BaseModel):
+    path: str
 
 
 @asynccontextmanager
@@ -97,6 +104,7 @@ def get_note_by_title(title: str):
 
 @app.post("/notes")
 def create_note_route(request: NoteCreateRequest):
+    ignore_next_event(request.title)
     result = create_note(request.title, request.content)
     index_single_note(request.title)
     reset_chat_engine()
@@ -105,6 +113,7 @@ def create_note_route(request: NoteCreateRequest):
 
 @app.put("/notes/{title}")
 def update_note_by_title(title: str, request: NoteUpdateRequest):
+    ignore_next_event(title)
     result = update_note(title, request.content)
     if result is None:
         raise HTTPException(status_code=404, detail="Note not found")
@@ -115,6 +124,7 @@ def update_note_by_title(title: str, request: NoteUpdateRequest):
 
 @app.delete("/notes/{title}")
 def delete_note_by_title(title: str):
+    ignore_next_event(title)
     result = delete_note(title)
     if result is None:
         raise HTTPException(status_code=404, detail="Note not found")
@@ -125,6 +135,7 @@ def delete_note_by_title(title: str):
 
 @app.patch("/notes/{title}/rename")
 def rename_note_by_title(title: str, request: NoteRenameRequest):
+    ignore_next_event(title)
     result = rename_note(title, request.new_title)
 
     if result is None:
@@ -141,3 +152,26 @@ def rename_note_by_title(title: str, request: NoteRenameRequest):
 @app.get("/vault/name")
 def get_vault_name():
     return {"name": Path(NOTES_DIR).resolve().name}
+
+
+@app.get("/vault/path")
+def get_vault_path_route():
+    return {"path": get_vault_path()}
+
+
+@app.post("/vault/path")
+def post_vault_path_route(request: VaultPathRequest):
+    if not Path(request.path).exists():
+        raise HTTPException(status_code=400, detail="Path not found")
+
+    set_vault_path(request.path)
+
+    config.NOTES_DIR = request.path
+
+    stop_watchdog()
+    start_watchdog()
+
+    reindex_notes()
+    reset_chat_engine()
+
+    return {"status": "Success", "path": request.path}
