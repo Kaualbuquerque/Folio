@@ -1,28 +1,73 @@
 import { useEffect, useState } from 'react';
-import { Minus, Square, X } from 'lucide-react';
+import { FolderOpen, Menu, Minus, Square, X } from 'lucide-react';
 
 export default function TitleBar() {
     const [vaultName, setVaultName] = useState('');
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isChanging, setIsChanging] = useState(false);
 
-    useEffect(() => {
+    function fetchVaultName() {
         fetch('http://localhost:8000/vault/name')
             .then((r) => r.json())
-            .then((data) => setVaultName(data.name.toUpperCase()));
+            .then((data) => setVaultName(data.name.toLowerCase()));
+    }
+
+    useEffect(() => {
+        fetchVaultName()
     }, []);
+
+    async function handleChangeVault() {
+        setIsMenuOpen(false);
+        const folderPath = await window.electron.selectFolder();
+        if (!folderPath) return;
+
+        setIsChanging(true);
+        fetch('http://localhost:8000/vault/path', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: folderPath }),
+        })
+            .then((r) => r.json())
+            .then(() => {
+                fetchVaultName();
+                window.location.reload();
+            })
+            .finally(() => setIsChanging(false));
+    }
 
     return (
         <div
-            className="h-10 flex items-center justify-between px-4 border-b border-border-hairline bg-background select-none"
+            className="h-10 flex items-center justify-between px-4 border-b border-border-hairline bg-background select-none relative"
             style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
         >
-            <div className="flex items-center gap-2">
+            <div
+                className="relative flex items-center gap-2"
+                style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+            >
                 <span className="w-2 h-2 rounded-full bg-accent" />
-            </div>
 
-            <div className="flex items-center gap-2 text-[12px] text-foreground/50">
-                <span className="font-serif">Folio</span>
-                <span className="text-foreground/30">·</span>
-                <span className="tracking-[0.12em] uppercase text-[10px]">{vaultName}</span>
+                <button
+                    onClick={() => setIsMenuOpen((prev) => !prev)}
+                    disabled={isChanging}
+                    className="flex items-center gap-2 text-foreground/50 hover:text-foreground/80 transition-colors px-2 py-1 rounded-md hover:bg-surface-2 disabled:opacity-50"
+                >
+                    <span className="text-[12px] tracking-[0.04em] lowercase">
+                        {isChanging ? 'trocando...' : vaultName}
+                    </span>
+                    <Menu size={16} className="opacity-50" />
+                </button>
+
+                {isMenuOpen && (
+                    <div className="absolute top-full mt-1 left-0 bg-surface border border-border-hairline rounded-lg shadow-sm py-1 min-w-45 z-50">
+                        <button
+                            onClick={handleChangeVault}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-[12px] text-foreground/70 hover:bg-surface-2 hover:text-foreground transition-colors text-left"
+                        >
+                            <FolderOpen size={14} className="opacity-50" />
+                            Trocar cofre
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div
