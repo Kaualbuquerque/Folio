@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -34,6 +34,15 @@ function createWindow() {
         }
     });
     ipcMain.on('window:close', () => win.close());
+    ipcMain.handle('dialog:selectFolder', async () => {
+        const result = await dialog.showOpenDialog({
+            properties: ['openDirectory',]
+        });
+        if (result.canceled || result.filePaths.length === 0) {
+            return null;
+        }
+        return result.filePaths[0];
+    });
 }
 function loadWithRetry(win, url, attempt = 1) {
     win.loadURL(url).catch(() => {

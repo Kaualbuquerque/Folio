@@ -4,19 +4,19 @@ import chromadb
 
 configure_settings()
 
-print("Limpando índice anterior...")
+print("Clearing previous index...")
 chroma_client = chromadb.PersistentClient(path=DATA_DIR)
 
 try:
     chroma_client.delete_collection(COLLECTION_NAME)
-    print("✓ Índice anterior removido.")
+    print("✓ Previous index removed")
 except Exception:
-    print("Nenhum índice anterior encontrado, criando do zero.")
+    print("No previous index found, creating from scratch")
 
 _, _, vector_store, storage_context = get_vector_store()
 
-print("\nLendo e indexando suas notas...")
-documents = SimpleDirectoryReader(NOTES_DIR).load_data()
+print("\nReading and indexing your notes...")
+documents = SimpleDirectoryReader(NOTES_DIR, recursive=True).load_data()
 
 index = VectorStoreIndex.from_documents(
     documents,
@@ -24,5 +24,5 @@ index = VectorStoreIndex.from_documents(
     show_progress=True
 )
 
-print(f"\n✓ {len(documents)} nota(s) indexada(s) e salvas com sucesso!")
-print("Agora rode 'python main.py' para conversar com a IA.")
+print(f"\n✓ {len(documents)} Note(s) indexed and saved successfully!")
+print("Now run 'python main.py' to talk to the AI..")

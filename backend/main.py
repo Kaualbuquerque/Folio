@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
 import config
-from config import NOTES_DIR, configure_settings
+from config import configure_settings
 from monitor import start_watchdog, stop_watchdog, ignore_next_event
 from schemas import ChatRequest, NoteCreateRequest, NoteUpdateRequest, NoteRenameRequest
 from vault_settings import get_vault_path, set_vault_path
@@ -151,7 +151,7 @@ def rename_note_by_title(title: str, request: NoteRenameRequest):
 
 @app.get("/vault/name")
 def get_vault_name():
-    return {"name": Path(NOTES_DIR).resolve().name}
+    return {"name": Path(config.NOTES_DIR).resolve().name}
 
 
 @app.get("/vault/path")

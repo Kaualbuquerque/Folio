@@ -1,4 +1,4 @@
-export {};
+export { };
 
 declare global {
   interface Window {
@@ -6,6 +6,7 @@ declare global {
       minimize: () => void;
       maximize: () => void;
       close: () => void;
+      selectFolder: () => Promise<string | null>
     };
   }
 }

@@ -102,7 +102,7 @@ def reindex_notes() -> int:
         print(f"error deleting collection: {e}")
 
     _, _, vector_store, storage_context = get_vector_store()
-    documents = SimpleDirectoryReader(config.NOTES_DIR).load_data()
+    documents = SimpleDirectoryReader(config.NOTES_DIR, recursive=True).load_data()
 
     VectorStoreIndex.from_documents(
         documents,
@@ -135,11 +135,15 @@ def list_notes() -> list[dict]:
     return notes
 
 
-def get_note(title: str) -> dict | None:
+def _find_note_file(title: str) -> Path | None:
     notes_dir = Path(config.NOTES_DIR)
-    file = notes_dir / f"{title}.md"
+    matches = list(notes_dir.glob(f"**/{title}.md"))
+    return matches[0] if matches else None
 
-    if not file.exists():
+
+def get_note(title: str) -> dict | None:
+    file = _find_note_file(title)
+    if file is None:
         return None
 
     content = file.read_text(encoding="utf-8")
@@ -176,10 +180,8 @@ def create_note(title: str, content: str | None = None) -> dict:
 
 
 def update_note(title: str, content: str) -> dict | None:
-    notes_dir = Path(config.NOTES_DIR)
-    file = notes_dir / f"{title}.md"
-
-    if not file.exists():
+    file = _find_note_file(title)
+    if file is None:
         return None
 
     file.write_text(content, encoding="utf-8")
@@ -187,10 +189,8 @@ def update_note(title: str, content: str) -> dict | None:
 
 
 def delete_note(title: str) -> dict | None:
-    notes_dir = Path(config.NOTES_DIR)
-    file = notes_dir / f"{title}.md"
-
-    if not file.exists():
+    file = _find_note_file(title)
+    if file is None:
         return None
 
     file.unlink()
@@ -198,13 +198,11 @@ def delete_note(title: str) -> dict | None:
 
 
 def rename_note(old_title: str, new_title: str) -> dict | None:
-    notes_dir = Path(config.NOTES_DIR)
-    old_file = notes_dir / f"{old_title}.md"
-    new_file = notes_dir / f"{new_title}.md"
-
-    if not old_file.exists():
+    old_file = _find_note_file(old_title)
+    if old_file is None:
         return None
 
+    new_file = old_file.parent / f"{new_title}.md"
     if new_file.exists():
         return {"error": "file already exists"}
 
@@ -221,8 +219,8 @@ def index_single_note(title: str) -> None:
     configure_settings()
     _, chroma_collection, vector_store, storage_context = get_vector_store()
 
-    note_path = Path(config.NOTES_DIR) / f"{title}.md"
-    if not note_path.exists():
+    note_path = _find_note_file(title)
+    if note_path is None:
         return
 
     document = SimpleDirectoryReader(input_files=[str(note_path)]).load_data()[0]
@@ -231,7 +229,6 @@ def index_single_note(title: str) -> None:
         chroma_collection.delete(where={"file_name": f"{title}.md"})
     except Exception as e:
         print(f"error deleting collection: {e}")
-        pass
 
     index = VectorStoreIndex.from_vector_store(vector_store, storage_context=storage_context)
     index.insert(document)
