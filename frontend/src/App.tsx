@@ -76,6 +76,7 @@ export default function App() {
                                 onSaved={handleSaved}
                                 onDeleted={handleDeleted}
                                 isDark={isDark}
+                                onNoteClick={setSelectedNote}
                             />
                         </Panel>
                     </>

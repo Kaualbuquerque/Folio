@@ -201,11 +201,22 @@ body {
     top: 2px;
     width: 4px;
     height: 8px;
-    border:  solid var(--color-accent-foreground);
+    border: solid var(--color-accent-foreground);
     border-width: 0 1px 1px 0;
     transform: rotate(45deg);
 }
 
 .cm-checkbox-marker:hover {
     border-color: color-mix(in srgb, var(--color-accent) 70%, transparent);
+}
+
+.cm-wikilink {
+    color: var(--color-accent);
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+.cm-wikilink:hover {
+    text-decoration-color: var(--color-accent);
 }

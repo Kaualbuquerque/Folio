@@ -34,6 +34,7 @@ export interface NoteEditorProps {
     onSaved: () => void;
     onDeleted: () => void;
     isDark: boolean;
+    onNoteClick: (title: string) => void;
 }
 
 export interface VaultData {

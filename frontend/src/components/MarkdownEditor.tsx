@@ -9,9 +9,11 @@ import { syntaxHighlighting } from "@codemirror/language";
 import { liveMarkDownPlugin } from "../lib/liveMarkdownPlugin";
 import { markdownHighlightStyle } from "../lib/markdownHighlight";
 
-export default function MarkdownEditor({ value, onChange }: MarkdownEditorProps) {
+export default function MarkdownEditor({ value, onChange, onNoteClick }: MarkdownEditorProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewRef = useRef<EditorView | null>(null);
+    const onNoteClickRef = useRef(onNoteClick);
+    onNoteClickRef.current = onNoteClick;
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -34,6 +36,20 @@ export default function MarkdownEditor({ value, onChange }: MarkdownEditorProps)
                             onChange(update.state.doc.toString());
                         }
                     }),
+                    EditorView.domEventHandlers({
+                        mousedown(event) {
+                            const target = event.target as HTMLElement;
+                            if (target.classList.contains('cm-wikilink')) {
+                                const title = target.getAttribute('data-note-title');
+                                if (title && onNoteClickRef.current) {
+                                    event.preventDefault();
+                                    onNoteClickRef.current(title);
+                                    return true;
+                                }
+                            }
+                            return false;
+                        },
+                    }),
                     EditorView.theme({
                         '&': {
                             height: '100%',
@@ -45,7 +61,7 @@ export default function MarkdownEditor({ value, onChange }: MarkdownEditorProps)
                         '.cm-content': {
                             padding: '0 4px 4rem 4px',
                             caretColor: 'var(--color-accent)',
-                            
+
                         },
                         '.cm-line': {
                             lineHeight: '1.7',
@@ -77,7 +93,7 @@ export default function MarkdownEditor({ value, onChange }: MarkdownEditorProps)
         return () => {
             view.destroy();
         };
-    }, []);
+    }, [onNoteClick]);
 
     useEffect(() => {
         const view = viewRef.current;

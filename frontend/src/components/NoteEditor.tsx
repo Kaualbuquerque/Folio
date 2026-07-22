@@ -4,7 +4,7 @@ import { Save, Trash2, X } from "lucide-react";
 import { maskDate } from "../utils/dateUtils";
 import MarkdownEditor from "./MarkdownEditor";
 
-export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted }: NoteEditorProps) {
+export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, onNoteClick }: NoteEditorProps) {
     const isNew = selectedNote === '__new__';
 
     const [title, setTitle] = useState('');
@@ -227,6 +227,7 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted }
                 <MarkdownEditor
                     value={content}
                     onChange={setContent}
+                    onNoteClick={onNoteClick}
                 />
             </div>
 
