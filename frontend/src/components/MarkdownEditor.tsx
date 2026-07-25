@@ -6,7 +6,7 @@ import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { languages } from '@codemirror/language-data'
 import { syntaxHighlighting } from "@codemirror/language";
-import { liveMarkDownPlugin } from "../lib/liveMarkdownPlugin";
+import { liveMarkdownField } from "../lib/liveMarkdownPlugin";
 import { markdownHighlightStyle } from "../lib/markdownHighlight";
 import { Table } from "@lezer/markdown";
 
@@ -31,7 +31,7 @@ export default function MarkdownEditor({ value, onChange, onNoteClick }: Markdow
                         extensions: [Table],
                     }),
                     syntaxHighlighting(markdownHighlightStyle),
-                    liveMarkDownPlugin,
+                    liveMarkdownField,
                     EditorView.lineWrapping,
                     EditorView.updateListener.of((update) => {
                         if (update.docChanged) {
