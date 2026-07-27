@@ -95,7 +95,7 @@ export default function MarkdownEditor({ value, onChange, onNoteClick }: Markdow
         return () => {
             view.destroy();
         };
-    }, [onNoteClick]);
+    }, []);
 
     useEffect(() => {
         const view = viewRef.current;
