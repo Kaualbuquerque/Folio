@@ -223,41 +223,16 @@ body {
 
 .cm-table-wrapper {
     margin: 0.8em 0;
+}
+
+.cm-table-scroll {
     overflow-x: auto;
 }
 
 .cm-table {
     border-collapse: collapse;
     width: 100%;
-    font-family: var(--font-sans);
-    font-size: 13px;
-}
-
-.cm-table th,
-.cm-table td {
-    border: 1px solid var(--color-border-hairline);
-    padding: 6px 10px;
-    text-align: left;
-}
-
-.cm-table th {
-    background: var(--color-surface-2);
-    font-weight: 600;
-    color: var(--color-foreground);
-}
-
-.cm-table td {
-    color: var(--color-foreground);
-}
-
-.cm-table-wrapper {
-    margin: 0.8em 0;
-    overflow-x: auto;
-}
-
-.cm-table {
-    border-collapse: collapse;
-    width: 100%;
+    table-layout: fixed;
     font-family: var(--font-sans);
     font-size: 13px;
 }
@@ -268,6 +243,9 @@ body {
     padding: 6px 10px;
     text-align: left;
     outline: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .cm-table th {
@@ -284,4 +262,76 @@ body {
     outline: 1px solid var(--color-accent);
     outline-offset: -1px;
     background: var(--color-accent-soft);
+    white-space: normal;
+    overflow: visible;
+}
+
+.cm-table-control-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-muted-foreground);
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.cm-table-control-btn:hover {
+    background: var(--color-surface);
+    color: var(--color-destructive);
+}
+
+.cm-table-col-remove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.cm-table th:hover .cm-table-col-remove {
+    opacity: 1;
+}
+
+.cm-table-row-control {
+    width: 24px;
+    border: none !important;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.cm-table tr:hover .cm-table-row-control {
+    opacity: 1;
+}
+
+.cm-table-add-col-cell {
+    width: 28px;
+    border: none !important;
+    background: transparent !important;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.cm-table-add-row-bar {
+    display: block;
+    width: 100%;
+    margin-top: 2px;
+    padding: 4px;
+    border: 1px dashed var(--color-border-hairline);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--color-muted-foreground);
+    font-size: 11px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.cm-table-add-row-bar:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
 }
