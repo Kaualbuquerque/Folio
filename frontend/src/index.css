@@ -317,21 +317,9 @@ body {
     vertical-align: middle;
 }
 
-.cm-table-add-row-bar {
-    display: block;
-    width: 100%;
-    margin-top: 2px;
-    padding: 4px;
-    border: 1px dashed var(--color-border-hairline);
-    border-radius: 4px;
-    background: transparent;
-    color: var(--color-muted-foreground);
-    font-size: 11px;
-    cursor: pointer;
-    text-align: center;
-}
-
-.cm-table-add-row-bar:hover {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
+.cm-table-add-row-cell {
+    border: none !important;
+    background: transparent !important;
+    text-align: left;
+    padding: 4px 10px !important;
 }

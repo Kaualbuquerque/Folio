@@ -3,3 +3,7 @@ export interface MarkdownEditorProps {
     onChange: (value: string) => void;
     onNoteClick?: (title: string) => void;
 }
+
+export interface MarkdownEditorHandle {
+    insertTable: () => void;
+}

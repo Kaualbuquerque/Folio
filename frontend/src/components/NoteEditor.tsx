@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { NoteDetail, NoteEditorProps } from "../types/notes";
-import { Save, Trash2, X } from "lucide-react";
+import { Save, Table2, Trash2, X } from "lucide-react";
 import MarkdownEditor from "./MarkdownEditor";
+import type { MarkdownEditorHandle } from "../types/editor";
 
 export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, onNoteClick }: NoteEditorProps) {
     const isNew = selectedNote === '__new__';
@@ -13,6 +14,7 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
     const [tags, setTags] = useState<string[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const markdownEditorRef = useRef<MarkdownEditorHandle>(null);
 
     useEffect(() => {
         if (isNew) {
@@ -162,10 +164,10 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
             </div>
 
             {/* Metadata */}
-            <div className="px-6 py-4 border-b border-border-hairline flex flex-col gap-3">
+            <div className="px-6 py-4 border-b border-border-hairline flex flex-row items-center gap-3">
 
                 {/* Tags */}
-                <div>
+                <div className="w-full">
                     <p className="text-[10px] uppercase tracking-[0.12em] text-foreground/40 mb-2">Tags</p>
                     <div className="flex flex-wrap gap-1.5 mb-2">
                         {tags.map((tag) => (
@@ -185,14 +187,25 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
                         onChange={(e) => setTagInput(e.target.value)}
                         onKeyDown={handleTagKeyDown}
                         placeholder="+ Adicionar tag (Enter para confirmar)"
-                        className="w-full bg-transparent text-[13px] text-foreground placeholder:text-foreground/30 outline-none"
+                        className="w-full bg-transparent text-[13px] text-foreground placeholder:text-foreground/30 outline-none border border-surface-2 py-1.5 px-2 rounded-sm"
                     />
+                </div>
+
+                <div className="flex items-center px-2 self-end">
+                    <button
+                        onClick={() => markdownEditorRef.current?.insertTable()}
+                        title="Inserir tabela"
+                        className="p-2 rounded-md text-foreground/40 border border-accent/40 hover:text-foreground/80 hover:border-accent transition-colors"
+                    >
+                        <Table2 size={16} />
+                    </button>
                 </div>
             </div>
 
             {/* Body */}
             <div className="flex-1 py-4 overflow-hidden">
                 <MarkdownEditor
+                    ref={markdownEditorRef}
                     value={content}
                     onChange={setContent}
                     onNoteClick={onNoteClick}
