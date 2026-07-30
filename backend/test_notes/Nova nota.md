@@ -6,4 +6,3 @@ tags: [Teste]
 
 | Coluna 1 | Coluna 2 |
 | --- | --- |
-|  |  |
