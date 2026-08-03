@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
-import { FolderOpen, Menu, Minus, Square, X } from 'lucide-react';
+import { FolderOpen, Menu, Minus, Moon, Square, Sun, X } from 'lucide-react';
 
-export default function TitleBar() {
+interface TitleBarProps {
+    isDark: boolean;
+    toggleTheme: () => void;
+}
+
+export default function TitleBar({ isDark, toggleTheme }: TitleBarProps) {
     const [vaultName, setVaultName] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isChanging, setIsChanging] = useState(false);
@@ -74,6 +79,16 @@ export default function TitleBar() {
                 className="flex items-center gap-1"
                 style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
             >
+
+                <button
+                    onClick={toggleTheme}
+                    className="w-8 h-8 flex items-center justify-center text-foreground/40 hover:text-foreground/80 hover:bg-surface-2 rounded transition-colors"
+                >
+                    {isDark ? <Sun size={14} /> : <Moon size={14} />}
+                </button>
+
+                <div className="w-px h-4 bg-border-hairline mx-1" />
+
                 <button
                     onClick={() => window.electron.minimize()}
                     className="w-8 h-8 flex items-center justify-center text-foreground/40 hover:text-foreground/80 hover:bg-surface-2 rounded transition-colors"

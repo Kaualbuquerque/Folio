@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import IconRail from './components/IconRail';
 import HomePage from './components/pages/HomePage';
 import type { ActivePage } from './types/pages';
+import FilterPage from './components/pages/FilterPage';
 
 export default function App() {
     const { isDark, toggleTheme } = useTheme();
@@ -16,7 +17,7 @@ export default function App() {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isReindexing, setIsReindexing] = useState(false);
     const [vaultName, setVaultName] = useState('')
-    const { refresh } = useVaultData();
+    const { stats, calendar, notes, isLoading, refresh } = useVaultData();
 
     const { defaultLayout, onLayoutChanged } = useDefaultLayout({
         id: "vault-layout",
@@ -51,7 +52,7 @@ export default function App() {
 
     return (
         <div className="flex flex-col h-screen overflow-hidden bg-background">
-            <TitleBar />
+            <TitleBar isDark={isDark} toggleTheme={toggleTheme} />
 
             <div className="flex flex-1 overflow-hidden">
 
@@ -73,8 +74,6 @@ export default function App() {
                     <Panel minSize="30" id="main">
                         {activePage === 'chat' && (
                             <Chat
-                                isDark={isDark}
-                                toggleTheme={toggleTheme}
                                 onNoteSelect={setSelectedNote}
                             />
                         )}
@@ -86,9 +85,13 @@ export default function App() {
                             />
                         )}
                         {activePage === 'filters' && (
-                            <div className="flex-1 flex items-center justify-center text-foreground/30 text-sm h-full">
-                                Página Filtros — em breve
-                            </div>
+                            <FilterPage
+                                stats={stats}
+                                calendar={calendar}
+                                notes={notes}
+                                isLoading={isLoading}
+                                onNoteSelect={setSelectedNote}
+                            />
                         )}
                     </Panel>
 
@@ -101,7 +104,6 @@ export default function App() {
                                     onClose={() => setSelectedNote(null)}
                                     onSaved={handleSaved}
                                     onDeleted={handleDeleted}
-                                    isDark={isDark}
                                     onNoteClick={setSelectedNote}
                                 />
                             </Panel>

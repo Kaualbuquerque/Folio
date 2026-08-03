@@ -32,7 +32,6 @@ export interface NoteEditorProps {
     onClose: () => void;
     onSaved: () => void;
     onDeleted: () => void;
-    isDark: boolean;
     onNoteClick: (title: string) => void;
 }
 
