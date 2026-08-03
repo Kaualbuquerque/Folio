@@ -12,7 +12,7 @@ from schemas import ChatRequest, NoteCreateRequest, NoteUpdateRequest, NoteRenam
 from vault_settings import get_vault_path, set_vault_path
 from services.chat_service import ask, reset_chat_engine
 from services.notes_service import analyze_notes, reindex_notes, list_notes, get_note, create_note, update_note, \
-    delete_note, rename_note, index_single_note, remove_note_from_index
+    delete_note, rename_note, index_single_note, remove_note_from_index, get_file_tree
 
 
 class VaultPathRequest(BaseModel):
@@ -169,3 +169,7 @@ def post_vault_path_route(request: VaultPathRequest):
     reset_chat_engine()
 
     return {"status": "Success", "path": request.path}
+
+@app.get("/vault/tree")
+def get_vault_tree():
+    return get_file_tree()

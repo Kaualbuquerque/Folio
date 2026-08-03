@@ -1,5 +1,5 @@
 import { FolderTree, MessageSquare, RefreshCw, SlidersHorizontal } from "lucide-react";
-import type { IconRailProps, RailButtonProps } from "../types/sidebar";
+import type { IconRailProps, RailButtonProps } from "../types/iconRail";
 
 function RailButton({ icon, label, onClick, disabled, isActive }: RailButtonProps) {
     return (

@@ -234,3 +234,36 @@ def remove_note_from_index(title: str) -> None:
         chroma_collection.delete(where={"file_name": f"{title}.md"})
     except Exception as e:
         print(f"error deleting collection: {e}")
+
+
+def get_file_tree() -> dict:
+    notes_dir = Path(config.NOTES_DIR)
+
+    def build_tree(directory: Path) -> dict:
+        children = []
+
+        entries = sorted(directory.iterdir(), key=lambda e: (e.is_file(), e.name.lower()))
+
+        for entry in entries:
+            if entry.name.startswith('.'):
+                continue
+
+            if entry.is_dir():
+                subtree = build_tree(entry)
+                if subtree["children"]:
+                    children.append({
+                        "type": "folder",
+                        "name": entry.name,
+                        "children": subtree["children"],
+                    })
+            elif entry.suffix == ".md":
+                children.append({
+                    "type": "file",
+                    "name": entry.stem,
+                    "path": str(entry.relative_to(notes_dir)),
+                })
+
+        return {"children": children}
+
+    tree = build_tree(notes_dir)
+    return {"name": notes_dir.name, "children": tree["children"]}

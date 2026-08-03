@@ -9,6 +9,7 @@ import IconRail from './components/IconRail';
 import HomePage from './components/pages/HomePage';
 import type { ActivePage } from './types/pages';
 import FilterPage from './components/pages/FilterPage';
+import FileDrawer from './components/FileDrawer';
 
 export default function App() {
     const { isDark, toggleTheme } = useTheme();
@@ -65,6 +66,10 @@ export default function App() {
                     isReindexing={isReindexing}
                 />
 
+                {isDrawerOpen && (
+                    <FileDrawer onNoteSelect={setSelectedNote} />
+                )}
+
                 <Group
                     orientation="horizontal"
                     className="flex-1"
@@ -81,7 +86,7 @@ export default function App() {
                             <HomePage
                                 vaultName={vaultName}
                                 onNavigate={setActivePage}
-                                onOpenDrawer={() => setIsDrawerOpen(!isDrawerOpen)}
+                                onOpenDrawer={() => setIsDrawerOpen((prev) => !prev)}
                             />
                         )}
                         {activePage === 'filters' && (
