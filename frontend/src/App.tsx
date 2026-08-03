@@ -1,21 +1,22 @@
 import { Group, Panel, Separator, useDefaultLayout } from 'react-resizable-panels';
 import TitleBar from './components/TitleBar';
-import Sidebar from './components/Sidebar';
 import Chat from './components/Chat';
 import NoteEditor from './components/NoteEditor';
 import { useTheme } from './hooks/useTheme';
 import { useVaultData } from './hooks/useVaultData';
 import { useState, useEffect } from 'react';
-import type { ActivePage } from './types/sidebar';
 import IconRail from './components/IconRail';
+import HomePage from './components/pages/HomePage';
+import type { ActivePage } from './types/pages';
 
 export default function App() {
     const { isDark, toggleTheme } = useTheme();
     const [selectedNote, setSelectedNote] = useState<string | null>(null);
     const [activePage, setActivePage] = useState<ActivePage>('home');
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const { stats, calendar, notes, isLoading, refresh } = useVaultData();
     const [isReindexing, setIsReindexing] = useState(false);
+    const [vaultName, setVaultName] = useState('')
+    const { refresh } = useVaultData();
 
     const { defaultLayout, onLayoutChanged } = useDefaultLayout({
         id: "vault-layout",
@@ -24,6 +25,12 @@ export default function App() {
     useEffect(() => {
         refresh();
     }, []);
+
+    useEffect(() => {
+        fetch('http://localhost:8000/vault/name')
+            .then((r) => r.json())
+            .then((data) => setVaultName(data.name))
+    }, [])
 
     function handleSaved() {
         refresh();
@@ -72,9 +79,11 @@ export default function App() {
                             />
                         )}
                         {activePage === 'home' && (
-                            <div className="flex-1 flex items-center justify-center text-foreground/30 text-sm h-full">
-                                Página Início — em breve
-                            </div>
+                            <HomePage
+                                vaultName={vaultName}
+                                onNavigate={setActivePage}
+                                onOpenDrawer={() => setIsDrawerOpen(!isDrawerOpen)}
+                            />
                         )}
                         {activePage === 'filters' && (
                             <div className="flex-1 flex items-center justify-center text-foreground/30 text-sm h-full">

@@ -1,6 +1,5 @@
 import type { Notes, NotesCalendar, NotesStats } from "./notes";
-
-export type ActivePage = 'home' | 'chat' | 'filters';
+import type { ActivePage } from "./pages";
 
 export interface SideBarProps {
     stats: NotesStats;
@@ -14,7 +13,6 @@ export interface SideBarProps {
 
 export interface SidebarHandle {
     refresh: () => void;
-
 }
 
 export interface IconRailProps {
