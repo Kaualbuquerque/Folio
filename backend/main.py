@@ -100,6 +100,8 @@ def get_note_by_title(title: str):
 def create_note_route(request: NoteCreateRequest):
     ignore_next_event(request.title)
     result = create_note(request.title, request.content)
+    if "error" in result:
+        raise HTTPException(status_code=409, detail=result["error"])
     index_single_note(request.title)
     reset_chat_engine()
     return result
@@ -169,6 +171,7 @@ def post_vault_path_route(request: VaultPathRequest):
     reset_chat_engine()
 
     return {"status": "Success", "path": request.path}
+
 
 @app.get("/vault/tree")
 def get_vault_tree():

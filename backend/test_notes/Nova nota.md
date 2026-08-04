@@ -1,8 +1,6 @@
 ---
-tags: [Teste]
+tags: []
 ---
 
 # Nova nota
 
-| Coluna 1 | Coluna 2 |
-| --- | --- |

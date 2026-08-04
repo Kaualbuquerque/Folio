@@ -18,7 +18,7 @@ export default function App() {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isReindexing, setIsReindexing] = useState(false);
     const [vaultName, setVaultName] = useState('')
-    const { stats, calendar, notes, isLoading, refresh } = useVaultData();
+    const { stats, calendar, notes, isLoading, fileTree, refresh } = useVaultData();
 
     const { defaultLayout, onLayoutChanged } = useDefaultLayout({
         id: "vault-layout",
@@ -69,6 +69,7 @@ export default function App() {
 
                 {isDrawerOpen && (
                     <FileDrawer
+                        fileTree={fileTree}
                         onNoteSelect={setSelectedNote}
                         onNewNote={() => setSelectedNote('__new__')}
                     />
@@ -108,7 +109,7 @@ export default function App() {
                     {selectedNote && (
                         <>
                             <Separator className="w-px bg-border-hairline hover:bg-accent/40 transition-colors cursor-col-resize" />
-                            <Panel defaultSize="28" minSize="30" maxSize="45" id="editor">
+                            <Panel defaultSize="28" minSize="30" maxSize="50" id="editor">
                                 <NoteEditor
                                     selectedNote={selectedNote}
                                     onClose={() => setSelectedNote(null)}

@@ -162,6 +162,10 @@ def get_note(title: str) -> dict | None:
 
 
 def create_note(title: str, content: str | None = None) -> dict:
+    existing = _find_note_file(title)
+    if existing is not None:
+        return {"error": "file already exists"}
+
     notes_dir = Path(config.NOTES_DIR)
     file = notes_dir / f"{title}.md"
 

@@ -1,3 +1,5 @@
+import type { FileTree } from "./fileTree";
+
 export interface NotesStats {
     total: number;
     orphans: number;
@@ -39,6 +41,7 @@ export interface VaultData {
     stats: NotesStats;
     calendar: NotesCalendar | null;
     notes: Notes[];
+    fileTree: FileTree;
     isLoading: boolean;
     refresh: () => void;
 }

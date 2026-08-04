@@ -4,6 +4,15 @@ import { Save, Table2, Trash2, X } from "lucide-react";
 import MarkdownEditor from "./MarkdownEditor";
 import type { MarkdownEditorHandle } from "../types/editor";
 
+const ERROR_MESSAGES: Record<string, string> = {
+    'file already exists': 'Já existe uma nota com esse título',
+    'Note not found': 'Nota não encontrada',
+};
+
+function translateError(detail: string): string {
+    return ERROR_MESSAGES[detail] ?? detail;
+}
+
 export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, onNoteClick }: NoteEditorProps) {
     const isNew = selectedNote === '__new__';
 
@@ -15,6 +24,7 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
     const [content, setContent] = useState('');
     const [originalTitle, setOriginalTitle] = useState('');
     const [tags, setTags] = useState<string[]>([]);
+    const [saveError, setSaveError] = useState<string | null>(null);
     const markdownEditorRef = useRef<MarkdownEditorHandle>(null);
 
     useEffect(() => {
@@ -44,6 +54,16 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
                 setIsLoaded(true);
             });
     }, [selectedNote]);
+
+    useEffect(() => {
+        if (!saveError) return;
+
+        const timeout = setTimeout(() => {
+            setSaveError(null);
+        }, 3000);
+
+        return () => clearTimeout(timeout);
+    }, [saveError]);
 
     function handleTagKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
         if (e.key === 'Enter') {
@@ -75,9 +95,9 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
     }
 
     function handleSave() {
-        console.log('title no momento do save:', title, typeof title);
         if (!title.trim()) return;
         setIsSaving(true);
+        setSaveError(null);
 
         const fullContent = buildFullContent();
 
@@ -87,7 +107,15 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title, content: fullContent }),
             })
+                .then(async (r) => {
+                    if (!r.ok) {
+                        const data = await r.json();
+                        throw new Error(translateError(data.detail));
+                    }
+                    return r.json();
+                })
                 .then(() => onSaved())
+                .catch((err) => setSaveError(err.message))
                 .finally(() => setIsSaving(false));
             return;
         }
@@ -167,6 +195,11 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
                     placeholder="Título da nota"
                     className="w-full bg-transparent font-serif text-2xl text-foreground placeholder:text-foreground/30 outline-none disabled:opacity-100"
                 />
+                {saveError && (
+                    <div className="flex items-center justify-center py-2 px-3 rounded-md bg-destructive/70">
+                        <p className="text-[12px] text-foreground font-bold">{saveError}</p>
+                    </div>
+                )}
             </div>
 
             {/* Metadata */}

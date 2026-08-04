@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { FileTree, FileTreeNode, TreeNodeProps } from "../types/fileTree";
 import { ChevronDown, ChevronRight, FilePlus, FileText, Folder } from "lucide-react";
 
 interface FileDrawerProps {
+    fileTree: FileTree | null;
     onNoteSelect: (title: string) => void;
     onNewNote: () => void;
 }
@@ -54,16 +55,8 @@ function TreeNode({ node, onNoteSelect, depth }: TreeNodeProps) {
     );
 }
 
-export default function FileDrawer({ onNoteSelect, onNewNote }: FileDrawerProps) {
-    const [tree, setTree] = useState<FileTree | null>(null);
-
-    useEffect(() => {
-        fetch('http://localhost:8000/vault/tree')
-            .then((r) => r.json())
-            .then((data: FileTree) => setTree(data));
-    }, []);
-
-    if (!tree) {
+export default function FileDrawer({ fileTree, onNoteSelect, onNewNote }: FileDrawerProps) {
+    if (!fileTree) {
         return (
             <aside className="w-60 h-full bg-surface/30 border-r border-border-hairline flex items-center justify-center shrink-0">
                 <p className="text-[13px] text-foreground/40">Carregando...</p>
@@ -75,7 +68,7 @@ export default function FileDrawer({ onNoteSelect, onNewNote }: FileDrawerProps)
         <aside className="w-60 h-full bg-surface/30 border-r border-border-hairline flex flex-col shrink-0">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border-hairline">
                 <span className="text-[10px] uppercase tracking-[0.12em] text-foreground/50">
-                    {tree.name}
+                    {fileTree.name}
                 </span>
                 <button
                     onClick={onNewNote}
@@ -86,10 +79,10 @@ export default function FileDrawer({ onNoteSelect, onNewNote }: FileDrawerProps)
                 </button>
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
-                {tree.children.map((node, i) => (
+                {fileTree.children.map((node, i) => (
                     <TreeNode key={i} node={node} onNoteSelect={onNoteSelect} depth={0} />
                 ))}
             </div>
         </aside>
-    )
+    );
 }
