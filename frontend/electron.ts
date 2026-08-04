@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -38,6 +38,9 @@ function createWindow(): void {
         }
     });
     ipcMain.on('window:close', () => win.close());
+    ipcMain.on('shell:openExternal', (_event, url: string) => {
+        shell.openExternal(url);
+    });
     ipcMain.handle('dialog:selectFolder', async () => {
         const result = await dialog.showOpenDialog({
             properties: ['openDirectory',]

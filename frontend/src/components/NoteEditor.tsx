@@ -7,20 +7,24 @@ import type { MarkdownEditorHandle } from "../types/editor";
 export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, onNoteClick }: NoteEditorProps) {
     const isNew = selectedNote === '__new__';
 
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
     const [title, setTitle] = useState('');
     const [tagInput, setTagInput] = useState('');
     const [content, setContent] = useState('');
     const [originalTitle, setOriginalTitle] = useState('');
     const [tags, setTags] = useState<string[]>([]);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
     const markdownEditorRef = useRef<MarkdownEditorHandle>(null);
 
     useEffect(() => {
+        setIsLoaded(false);
+
         if (isNew) {
             setTitle('Nova nota');
             setTags([]);
             setContent('');
+            setIsLoaded(true);
             return;
         }
 
@@ -28,7 +32,7 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
             .then((r) => r.json())
             .then((data: NoteDetail) => {
                 setTitle(data.title);
-                setOriginalTitle(data.title)
+                setOriginalTitle(data.title);
 
                 const titleLinePattern = new RegExp(`^#\\s*${escapeRegExp(data.title)}\\s*\\n*`);
                 const bodyWithoutTitle = data.content.replace(titleLinePattern, '');
@@ -37,6 +41,7 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
                 const fm = data.frontmatter;
                 const rawTags = fm.tags ?? [];
                 setTags(Array.isArray(rawTags) ? rawTags : [rawTags]);
+                setIsLoaded(true);
             });
     }, [selectedNote]);
 
@@ -70,6 +75,7 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
     }
 
     function handleSave() {
+        console.log('title no momento do save:', title, typeof title);
         if (!title.trim()) return;
         setIsSaving(true);
 
@@ -133,7 +139,7 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
                 <div className="flex items-center gap-3">
                     <button
                         onClick={handleSave}
-                        disabled={isSaving}
+                        disabled={isSaving || !isLoaded}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-hairline text-[12px] text-foreground/70 hover:border-accent/40 hover:text-foreground transition-colors disabled:opacity-40"
                     >
                         <Save size={12} />

@@ -7,6 +7,7 @@ export interface IconRailProps {
     onToggleDrawer: () => void;
     onReindex: () => void;
     isReindexing: boolean;
+    onNewNote: () => void;
 }
 
 export interface RailButtonProps {

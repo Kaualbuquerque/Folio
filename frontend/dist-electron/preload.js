@@ -6,4 +6,5 @@ electron_1.contextBridge.exposeInMainWorld('electron', {
     maximize: () => electron_1.ipcRenderer.send('window:maximize'),
     close: () => electron_1.ipcRenderer.send('window:close'),
     selectFolder: () => electron_1.ipcRenderer.invoke('dialog:selectFolder'),
+    openExternal: (url) => electron_1.ipcRenderer.send('shell:openExternal', url),
 });

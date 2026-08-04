@@ -64,10 +64,15 @@ export default function App() {
                     onToggleDrawer={() => setIsDrawerOpen((prev) => !prev)}
                     onReindex={handleReindex}
                     isReindexing={isReindexing}
+                    onNewNote={() => setSelectedNote('__new__')}
                 />
 
                 {isDrawerOpen && (
-                    <FileDrawer onNoteSelect={setSelectedNote} />
+                    <FileDrawer
+                        onNoteSelect={setSelectedNote}
+                        onNewNote={() => setSelectedNote('__new__')}
+                    />
+
                 )}
 
                 <Group
@@ -103,7 +108,7 @@ export default function App() {
                     {selectedNote && (
                         <>
                             <Separator className="w-px bg-border-hairline hover:bg-accent/40 transition-colors cursor-col-resize" />
-                            <Panel defaultSize="28" minSize="20" maxSize="45" id="editor">
+                            <Panel defaultSize="28" minSize="30" maxSize="45" id="editor">
                                 <NoteEditor
                                     selectedNote={selectedNote}
                                     onClose={() => setSelectedNote(null)}

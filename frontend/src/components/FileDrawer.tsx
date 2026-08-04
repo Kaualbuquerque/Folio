@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import type { FileTree, FileTreeNode, TreeNodeProps } from "../types/fileTree";
-import { ChevronDown, ChevronRight, FileText, Folder } from "lucide-react";
+import { ChevronDown, ChevronRight, FilePlus, FileText, Folder } from "lucide-react";
 
 interface FileDrawerProps {
     onNoteSelect: (title: string) => void;
+    onNewNote: () => void;
 }
 
 function countFiles(node: FileTreeNode): number {
@@ -53,7 +54,7 @@ function TreeNode({ node, onNoteSelect, depth }: TreeNodeProps) {
     );
 }
 
-export default function FileDrawer({ onNoteSelect }: FileDrawerProps) {
+export default function FileDrawer({ onNoteSelect, onNewNote }: FileDrawerProps) {
     const [tree, setTree] = useState<FileTree | null>(null);
 
     useEffect(() => {
@@ -64,19 +65,25 @@ export default function FileDrawer({ onNoteSelect }: FileDrawerProps) {
 
     if (!tree) {
         return (
-            <aside className="w-72 h-full bg-surface/30 border-r border-border-hairline flex items-center justify-center shrink-0">
+            <aside className="w-60 h-full bg-surface/30 border-r border-border-hairline flex items-center justify-center shrink-0">
                 <p className="text-[13px] text-foreground/40">Carregando...</p>
             </aside>
         );
     }
 
     return (
-        <aside className="w-72 h-full bg-surface/30 border-r border-border-hairline flex flex-col shrink-0">
+        <aside className="w-60 h-full bg-surface/30 border-r border-border-hairline flex flex-col shrink-0">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border-hairline">
                 <span className="text-[10px] uppercase tracking-[0.12em] text-foreground/50">
                     {tree.name}
                 </span>
-                <span className="text-[10px] text-foreground/30">.md</span>
+                <button
+                    onClick={onNewNote}
+                    title="Nova nota"
+                    className="text-foreground/40 hover:text-foreground/80 transition-colors"
+                >
+                    <FilePlus size={14} />
+                </button>
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
                 {tree.children.map((node, i) => (

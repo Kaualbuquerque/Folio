@@ -6,7 +6,8 @@ declare global {
       minimize: () => void;
       maximize: () => void;
       close: () => void;
-      selectFolder: () => Promise<string | null>
+      selectFolder: () => Promise<string | null>;
+      openExternal: (url: string) => void;
     };
   }
 }

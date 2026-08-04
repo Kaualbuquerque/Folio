@@ -62,14 +62,28 @@ const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorProps>(
                         EditorView.domEventHandlers({
                             mousedown(event) {
                                 const target = event.target as HTMLElement;
-                                if (target.classList.contains('cm-wikilink')) {
-                                    const title = target.getAttribute('data-note-title');
+
+                                const wikilinkEl = target.closest('.cm-wikilink') as HTMLElement | null;
+                                if (wikilinkEl) {
+                                    const title = wikilinkEl.getAttribute('data-note-title');
                                     if (title && onNoteClickRef.current) {
                                         event.preventDefault();
                                         onNoteClickRef.current(title);
                                         return true;
                                     }
                                 }
+
+                                const urlEl = target.closest('.cm-url-link') as HTMLElement | null;
+                                if (urlEl) {
+                                    const url = urlEl.getAttribute('data-url');
+                                    if (url) {
+                                        event.preventDefault();
+                                        const normalizedUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+                                        window.electron.openExternal(normalizedUrl);
+                                        return true;
+                                    }
+                                }
+
                                 return false;
                             },
                         }),

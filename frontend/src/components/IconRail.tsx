@@ -1,4 +1,4 @@
-import { FolderTree, MessageSquare, RefreshCw, SlidersHorizontal } from "lucide-react";
+import { FilePlus, FolderTree, MessageSquare, RefreshCw, SlidersHorizontal } from "lucide-react";
 import type { IconRailProps, RailButtonProps } from "../types/iconRail";
 
 function RailButton({ icon, label, onClick, disabled, isActive }: RailButtonProps) {
@@ -30,7 +30,8 @@ export default function IconRail({
     isDrawerOpen,
     onToggleDrawer,
     onReindex,
-    isReindexing
+    isReindexing,
+    onNewNote
 }: IconRailProps) {
     return (
         <aside className="w-14 h-full bg-surface/40 border-r border-border-hairline flex flex-col items-center py-3 gap-1 shrink-0">
@@ -60,7 +61,7 @@ export default function IconRail({
                 onClick={() => onNavigate('filters')}
             />
 
-            <span className="border-b border-border-hairline w-12"/>
+            <div className="border-b border-border-hairline w-12" />
 
             {/* File drawer */}
             <RailButton
@@ -68,6 +69,12 @@ export default function IconRail({
                 label="Arquivos"
                 isActive={isDrawerOpen}
                 onClick={onToggleDrawer}
+            />
+
+            <RailButton
+                icon={<FilePlus size={18} />}
+                label="Nova nota"
+                onClick={onNewNote}
             />
 
             {/* Reindex in footer */}

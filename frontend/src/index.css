@@ -221,6 +221,18 @@ body {
     text-decoration-color: var(--color-accent);
 }
 
+.cm-url-link {
+    color: var(--color-accent);
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+    text-underline-offset: 2px;
+}
+
+.cm-url-link:hover {
+    text-decoration-color: var(--color-accent);
+}
+
 .cm-table-wrapper {
     margin: 0.8em 0;
 }
