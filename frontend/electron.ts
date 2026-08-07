@@ -14,6 +14,8 @@ function createWindow(): void {
     const win = new BrowserWindow({
         width: 1280,
         height: 800,
+        minWidth: 900,
+        minHeight: 500,
         frame: false,
         backgroundColor: '#1F1E1C',
         icon: join(__dirname, '../build/icon.png'),
@@ -21,6 +23,21 @@ function createWindow(): void {
             contextIsolation: true,
             preload: join(__dirname, 'preload.js'),
         },
+    });
+
+    win.webContents.on('before-input-event', (event, input) => {
+        const isDevToolsShortcut =
+            input.key === 'F12' ||
+            (input.control && input.shift && input.key.toUpperCase() === 'I') ||
+            (input.meta && input.alt && input.key.toUpperCase() === 'I');
+
+        if (isDevToolsShortcut) {
+            event.preventDefault();
+        }
+    });
+
+    win.webContents.on('devtools-opened', () => {
+        win.webContents.closeDevTools();
     });
 
     if (isDev) {

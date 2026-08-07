@@ -58,14 +58,14 @@ function TreeNode({ node, onNoteSelect, depth }: TreeNodeProps) {
 export default function FileDrawer({ fileTree, onNoteSelect, onNewNote }: FileDrawerProps) {
     if (!fileTree) {
         return (
-            <aside className="w-60 h-full bg-surface/30 border-r border-border-hairline flex items-center justify-center shrink-0">
+            <aside className="w-full h-full bg-surface/30 border-r border-border-hairline flex items-center justify-center shrink-0 ">
                 <p className="text-[13px] text-foreground/40">Carregando...</p>
             </aside>
         );
     }
 
     return (
-        <aside className="w-60 h-full bg-surface/30 border-r border-border-hairline flex flex-col shrink-0">
+        <aside className="w-full h-full bg-surface/30 border-r border-border-hairline flex flex-col shrink-0">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border-hairline">
                 <span className="text-[10px] uppercase tracking-[0.12em] text-foreground/50">
                     {fileTree.name}

@@ -73,7 +73,7 @@ export default function FilterPage({ stats, calendar, notes, isLoading, onNoteSe
     return (
         <div className="h-full flex overflow-hidden">
 
-            <div className="w-80 shrink-0 border-r border-border-hairline p-6 overflow-y-auto custom-scrollbar">
+            <div className="w-75 shrink-0 border-r border-border-hairline p-6 overflow-y-auto custom-scrollbar">
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     <div className="bg-surface-2 border border-border-hairline rounded-xl p-4 text-center">
                         <p className="font-serif italic text-2xl text-foreground">{stats.total}</p>
@@ -194,7 +194,7 @@ export default function FilterPage({ stats, calendar, notes, isLoading, onNoteSe
                             className="w-full text-left p-4 rounded-xl border border-border-hairline bg-surface/40 hover:border-accent/40 transition-colors"
                         >
                             <div className="flex items-center justify-between mb-1">
-                                <p className="text-[14px] font-medium text-foreground">{note.title}</p>
+                                <p className="text-[14px] font-medium text-foreground truncate">{note.title}</p>
                                 <p className="text-[14px] text-foreground/40">{note.created_at}</p>
                             </div>
                             <p className="text-[12px] text-foreground/40 mb-1">{note.title}.md</p>

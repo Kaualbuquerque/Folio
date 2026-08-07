@@ -4,9 +4,11 @@ import { FolderOpen, Menu, Minus, Moon, Square, Sun, X } from 'lucide-react';
 interface TitleBarProps {
     isDark: boolean;
     toggleTheme: () => void;
+    onVaultChangeStart: () => void;
+    onVaultChanged: () => void;
 }
 
-export default function TitleBar({ isDark, toggleTheme }: TitleBarProps) {
+export default function TitleBar({ isDark, toggleTheme, onVaultChangeStart, onVaultChanged }: TitleBarProps) {
     const [vaultName, setVaultName] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isChanging, setIsChanging] = useState(false);
@@ -27,6 +29,8 @@ export default function TitleBar({ isDark, toggleTheme }: TitleBarProps) {
         if (!folderPath) return;
 
         setIsChanging(true);
+        onVaultChangeStart();
+
         fetch('http://localhost:8000/vault/path', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -35,7 +39,7 @@ export default function TitleBar({ isDark, toggleTheme }: TitleBarProps) {
             .then((r) => r.json())
             .then(() => {
                 fetchVaultName();
-                window.location.reload();
+                onVaultChanged();
             })
             .finally(() => setIsChanging(false));
     }

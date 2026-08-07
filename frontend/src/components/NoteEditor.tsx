@@ -182,7 +182,7 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
                         {isDeleting ? 'Apagando...' : 'Apagar'}
                     </button>
                     <button onClick={onClose} className="text-foreground/40 hover:text-foreground/80 transition-colors">
-                        <X size={16} />
+                        <X size={16} onClick={handleSave} />
                     </button>
                 </div>
             </div>

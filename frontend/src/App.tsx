@@ -17,6 +17,7 @@ export default function App() {
     const [activePage, setActivePage] = useState<ActivePage>('home');
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isReindexing, setIsReindexing] = useState(false);
+    const [isChangingVault, setIsChangingVault] = useState(false);
     const [vaultName, setVaultName] = useState('')
     const { stats, calendar, notes, isLoading, fileTree, refresh } = useVaultData();
 
@@ -53,7 +54,15 @@ export default function App() {
 
     return (
         <div className="flex flex-col h-screen overflow-hidden bg-background">
-            <TitleBar isDark={isDark} toggleTheme={toggleTheme} />
+            <TitleBar
+                isDark={isDark}
+                toggleTheme={toggleTheme}
+                onVaultChangeStart={() => setIsChangingVault(true)}
+                onVaultChanged={() => {
+                    refresh();
+                    setIsChangingVault(false);
+                }}
+            />
 
             <div className="flex flex-1 overflow-hidden">
 
@@ -67,22 +76,26 @@ export default function App() {
                     onNewNote={() => setSelectedNote('__new__')}
                 />
 
-                {isDrawerOpen && (
-                    <FileDrawer
-                        fileTree={fileTree}
-                        onNoteSelect={setSelectedNote}
-                        onNewNote={() => setSelectedNote('__new__')}
-                    />
-
-                )}
-
                 <Group
                     orientation="horizontal"
                     className="flex-1"
                     defaultLayout={defaultLayout}
                     onLayoutChanged={onLayoutChanged}
                 >
-                    <Panel minSize="30" id="main">
+                    {isDrawerOpen && (
+                        <>
+                            <Panel defaultSize="18" minSize="15" maxSize="20" id="drawer">
+                                <FileDrawer
+                                    fileTree={fileTree}
+                                    onNoteSelect={setSelectedNote}
+                                    onNewNote={() => setSelectedNote('__new__')}
+                                />
+                            </Panel>
+                            <Separator className="w-px bg-border-hairline hover:bg-accent/40 transition-colors cursor-col-resize" />
+                        </>
+                    )}
+
+                    <Panel minSize="0" id="main">
                         {activePage === 'chat' && (
                             <Chat
                                 onNoteSelect={setSelectedNote}
@@ -109,7 +122,7 @@ export default function App() {
                     {selectedNote && (
                         <>
                             <Separator className="w-px bg-border-hairline hover:bg-accent/40 transition-colors cursor-col-resize" />
-                            <Panel defaultSize="28" minSize="30" maxSize="50" id="editor">
+                            <Panel defaultSize="28" minSize="35" maxSize="100" id="editor">
                                 <NoteEditor
                                     selectedNote={selectedNote}
                                     onClose={() => setSelectedNote(null)}
@@ -121,8 +134,16 @@ export default function App() {
                         </>
                     )}
                 </Group>
-
             </div>
+
+            {isChangingVault && (
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                        <p className="text-[13px] text-foreground/60">Carregando novo cofre...</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

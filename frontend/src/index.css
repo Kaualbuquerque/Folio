@@ -88,6 +88,32 @@ body {
     }
 }
 
+.cm-scroller {
+    -ms-overflow-style: none;
+}
+
+.cm-scroller::-webkit-scrollbar {
+    width: 8px;
+    height: 6px;
+}
+
+.cm-scroller::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cm-scroller::-webkit-scrollbar-thumb {
+    background-color: color-mix(in srgb, var(--color-foreground) 15%, transparent);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    border-radius: 100px;
+}
+
+.cm-scroller::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, var(--color-foreground) 30%, transparent);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
 /* ── Markdown editor (CodeMirror) ──────────────────────────── */
 
 .cm-editor .cm-line {
