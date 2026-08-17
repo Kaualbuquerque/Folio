@@ -9,6 +9,14 @@ export default function FilterPage({ stats, calendar, notes, isLoading, onNoteSe
     const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
     const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
+    if (isLoading || !stats || !calendar) {
+        return (
+            <div className="h-full flex items-center justify-center">
+                <p className="text-[13px] text-foreground/40">Carregando...</p>
+            </div>
+        );
+    }
+
     const datesWithNotes = new Set(Object.values(calendar.dates));
     const grid = buildCalendarGrid(currentYear, currentMonth, datesWithNotes, selectedDate);
 
@@ -61,14 +69,6 @@ export default function FilterPage({ stats, calendar, notes, isLoading, onNoteSe
         if (selectedTags.length > 0 && !selectedTags.every((tag) => note.tags.includes(tag))) return false;
         return true;
     });
-
-    if (isLoading || !stats || !calendar) {
-        return (
-            <div className="h-full flex items-center justify-center">
-                <p className="text-[13px] text-foreground/40">Carregando...</p>
-            </div>
-        );
-    }
 
     return (
         <div className="h-full flex overflow-hidden">

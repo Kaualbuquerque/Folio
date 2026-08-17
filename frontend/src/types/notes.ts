@@ -38,10 +38,10 @@ export interface NoteEditorProps {
 }
 
 export interface VaultData {
-    stats: NotesStats;
+    stats: NotesStats | null;
     calendar: NotesCalendar | null;
     notes: Notes[];
-    fileTree: FileTree;
+    fileTree: FileTree | null;
     isLoading: boolean;
     refresh: () => void;
 }

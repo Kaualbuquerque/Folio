@@ -2,8 +2,7 @@ import json
 from pathlib import Path
 
 SETTINGS_FILE = Path(__file__).parent / "vault_settings.json"
-
-DEFAULT_NOTES_DIR = "./test_notes"
+DEFAULT_NOTES_DIR = Path(__file__).parent / "notes"
 
 
 def get_vault_path() -> str:
@@ -13,7 +12,8 @@ def get_vault_path() -> str:
         if saved_path and Path(saved_path).exists():
             return saved_path
 
-    return str(Path(DEFAULT_NOTES_DIR).resolve())
+    DEFAULT_NOTES_DIR.mkdir(parents=True, exist_ok=True)
+    return str(DEFAULT_NOTES_DIR.resolve())
 
 
 def set_vault_path(new_path: str) -> None:

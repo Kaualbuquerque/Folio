@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
@@ -176,3 +177,14 @@ def post_vault_path_route(request: VaultPathRequest):
 @app.get("/vault/tree")
 def get_vault_tree():
     return get_file_tree()
+
+
+if __name__ == "__main__":
+    try:
+        uvicorn.run(app, host="127.0.0.1", port=8000)
+    except Exception as e:
+        with open("crash_log.txt", "w", encoding="utf-8") as f:
+            import traceback
+
+            traceback.print_exc(file=f)
+        input("Pressione Enter para sair...")

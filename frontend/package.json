@@ -1,16 +1,40 @@
 {
-  "name": "Folio",
+  "name": "folio",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "main": "dist-electron/electron.js",
+  "author": "Kauã Albuquerque",
+  "description": "Editor de notas desktop com IA embutida",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "electron:build": "tsc -p tsconfig.electron.json && tsc -p tsconfig.preload.json",
-    "electron:dev": "concurrently \"npm run dev\" \"npm run electron:build && electron .\""
+    "electron:dev": "concurrently \"npm run dev\" \"npm run electron:build && electron .\"",
+    "dist": "npm run build && npm run electron:build && electron-builder"
+  },
+  "build": {
+    "appId": "com.kaua.folio",
+    "productName": "Folio",
+    "win": {
+      "icon": "build/icon.ico",
+      "target": "nsis"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "backend-dist",
+        "to": "backend-dist"
+      }
+    ],
+    "directories": {
+      "output": "release"
+    }
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.4",
@@ -35,6 +59,7 @@
     "@vitejs/plugin-react": "^6.0.1",
     "concurrently": "^10.0.3",
     "electron": "^42.4.1",
+    "electron-builder": "^25.1.8",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",

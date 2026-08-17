@@ -1,11 +1,13 @@
+import { ChildProcess, spawn } from 'child_process';
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
 const isDev = !app.isPackaged;
+
+let backendProcess: ChildProcess | null = null;
 
 function createWindow(): void {
     const preloadPath = join(__dirname, 'preload.js');
@@ -60,14 +62,13 @@ function createWindow(): void {
     });
     ipcMain.handle('dialog:selectFolder', async () => {
         const result = await dialog.showOpenDialog({
-            properties: ['openDirectory',]
+            properties: ['openDirectory'],
         });
         if (result.canceled || result.filePaths.length === 0) {
             return null;
         }
-
         return result.filePaths[0];
-    })
+    });
 }
 
 function loadWithRetry(win: BrowserWindow, url: string, attempt = 1): void {
@@ -78,4 +79,38 @@ function loadWithRetry(win: BrowserWindow, url: string, attempt = 1): void {
     });
 }
 
-app.whenReady().then(createWindow);
+function startBackend(): void {
+    if (isDev) return;
+
+    const backendPath = join(process.resourcesPath, 'backend-dist', 'folio-backend.exe');
+    backendProcess = spawn(backendPath, [], {
+        cwd: join(process.resourcesPath, 'backend-dist'),
+    });
+
+    backendProcess.stdout?.on('data', (data) => {
+        console.log(`[backend] ${data}`);
+    });
+
+    backendProcess.stderr?.on('data', (data) => {
+        console.error(`[backend] ${data}`);
+    });
+}
+
+function stopBackend(): void {
+    if (backendProcess) {
+        backendProcess.kill();
+        backendProcess = null;
+    }
+}
+
+app.whenReady().then(() => {
+    startBackend();
+    createWindow();
+});
+
+app.on('window-all-closed', () => {
+    stopBackend();
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
