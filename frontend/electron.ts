@@ -1,5 +1,6 @@
 import { ChildProcess, spawn } from 'child_process';
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
+import { appendFileSync, existsSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -27,25 +28,25 @@ function createWindow(): void {
         },
     });
 
-    win.webContents.on('before-input-event', (event, input) => {
-        const isDevToolsShortcut =
-            input.key === 'F12' ||
-            (input.control && input.shift && input.key.toUpperCase() === 'I') ||
-            (input.meta && input.alt && input.key.toUpperCase() === 'I');
-
-        if (isDevToolsShortcut) {
-            event.preventDefault();
-        }
-    });
-
-    win.webContents.on('devtools-opened', () => {
-        win.webContents.closeDevTools();
-    });
+    /*     win.webContents.on('before-input-event', (event, input) => {
+            const isDevToolsShortcut =
+                input.key === 'F12' ||
+                (input.control && input.shift && input.key.toUpperCase() === 'I') ||
+                (input.meta && input.alt && input.key.toUpperCase() === 'I');
+    
+            if (isDevToolsShortcut) {
+                event.preventDefault();
+            }
+        });
+    
+        win.webContents.on('devtools-opened', () => {
+            win.webContents.closeDevTools();
+        }); */
 
     if (isDev) {
         loadWithRetry(win, 'http://localhost:5173');
     } else {
-        win.loadFile('dist/index.html');
+        win.loadFile(join(__dirname, '../dist/index.html'));
     }
 
     ipcMain.on('window:minimize', () => win.minimize());
@@ -83,16 +84,33 @@ function startBackend(): void {
     if (isDev) return;
 
     const backendPath = join(process.resourcesPath, 'backend-dist', 'folio-backend.exe');
+    const logPath = join(app.getPath('userData'), 'backend.log');
+
+    if (!existsSync(logPath)) {
+        writeFileSync(logPath, '');
+    }
+
+    appendFileSync(logPath, `\n--- Iniciando backend em ${new Date().toISOString()} ---\n`);
+    appendFileSync(logPath, `Caminho: ${backendPath}\n`);
+
     backendProcess = spawn(backendPath, [], {
         cwd: join(process.resourcesPath, 'backend-dist'),
     });
 
     backendProcess.stdout?.on('data', (data) => {
-        console.log(`[backend] ${data}`);
+        appendFileSync(logPath, `[stdout] ${data}`);
     });
 
     backendProcess.stderr?.on('data', (data) => {
-        console.error(`[backend] ${data}`);
+        appendFileSync(logPath, `[stderr] ${data}`);
+    });
+
+    backendProcess.on('error', (err) => {
+        appendFileSync(logPath, `[erro ao iniciar] ${err.message}\n`);
+    });
+
+    backendProcess.on('exit', (code) => {
+        appendFileSync(logPath, `[backend encerrou] código: ${code}\n`);
     });
 }
 

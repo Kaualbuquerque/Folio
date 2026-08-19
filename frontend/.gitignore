@@ -23,6 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
+# Frontend build output
 release/
 dist/
 dist-electron/
+backend-dist/

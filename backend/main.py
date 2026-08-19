@@ -22,7 +22,6 @@ class VaultPathRequest(BaseModel):
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    configure_settings()
     start_watchdog()
     yield
     stop_watchdog()
@@ -32,7 +31,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origin_regex=r"^(http://localhost:5173|file://.*|null)$",
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
     allow_headers=["*"],
 )

@@ -10,6 +10,7 @@ import HomePage from './components/pages/HomePage';
 import type { ActivePage } from './types/pages';
 import FilterPage from './components/pages/FilterPage';
 import FileDrawer from './components/FileDrawer';
+import { waitForBackend } from './utils/waitForBackend';
 
 export default function App() {
     const { isDark, toggleTheme } = useTheme();
@@ -18,6 +19,8 @@ export default function App() {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isReindexing, setIsReindexing] = useState(false);
     const [isChangingVault, setIsChangingVault] = useState(false);
+    const [isBackendReady, setIsBackendReady] = useState(false);
+    const [backendFailed, setBackendFailed] = useState(false);
     const [vaultName, setVaultName] = useState('')
     const { stats, calendar, notes, isLoading, fileTree, refresh } = useVaultData();
 
@@ -26,14 +29,17 @@ export default function App() {
     });
 
     useEffect(() => {
-        refresh();
+        waitForBackend()
+            .then(() => {
+                setIsBackendReady(true);
+                refresh();
+                return fetch('http://localhost:8000/vault/name').then((r) => r.json());
+            })
+            .then((data) => {
+                if (data) setVaultName(data.name);
+            })
+            .catch(() => setBackendFailed(true));
     }, []);
-
-    useEffect(() => {
-        fetch('http://localhost:8000/vault/name')
-            .then((r) => r.json())
-            .then((data) => setVaultName(data.name))
-    }, [])
 
     function handleSaved() {
         refresh();
@@ -50,6 +56,27 @@ export default function App() {
         fetch('http://localhost:8000/reindex', { method: 'POST' })
             .then(() => refresh())
             .finally(() => setIsReindexing(false));
+    }
+
+    if (backendFailed) {
+        return (
+            <div className="h-screen flex items-center justify-center bg-background">
+                <p className="text-[14px] text-foreground/60">
+                    Não foi possível conectar ao backend. Tente reiniciar o aplicativo.
+                </p>
+            </div>
+        );
+    }
+
+    if (!isBackendReady) {
+        return (
+            <div className="h-screen flex items-center justify-center bg-background">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                    <p className="text-[13px] text-foreground/60">Iniciando o Folio...</p>
+                </div>
+            </div>
+        );
     }
 
     return (
