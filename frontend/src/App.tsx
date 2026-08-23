@@ -11,6 +11,7 @@ import type { ActivePage } from './types/pages';
 import FilterPage from './components/pages/FilterPage';
 import FileDrawer from './components/FileDrawer';
 import { waitForBackend } from './utils/waitForBackend';
+import GroqKeyModal from './components/GroqKeyModal';
 
 export default function App() {
     const { isDark, toggleTheme } = useTheme();
@@ -21,6 +22,7 @@ export default function App() {
     const [isChangingVault, setIsChangingVault] = useState(false);
     const [isBackendReady, setIsBackendReady] = useState(false);
     const [backendFailed, setBackendFailed] = useState(false);
+    const [isGroqModalOpen, setIsGroqModalOpen] = useState(false);
     const [vaultName, setVaultName] = useState('')
     const { stats, calendar, notes, isLoading, fileTree, refresh } = useVaultData();
 
@@ -89,7 +91,16 @@ export default function App() {
                     refresh();
                     setIsChangingVault(false);
                 }}
+                onOpenGroqModal={() => setIsGroqModalOpen(true)}
             />
+
+            {isGroqModalOpen && (
+                <GroqKeyModal
+                    onClose={() => setIsGroqModalOpen(false)}
+                    onSaved={() => {
+                    }}
+                />
+            )}
 
             <div className="flex flex-1 overflow-hidden">
 

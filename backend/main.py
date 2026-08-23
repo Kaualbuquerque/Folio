@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
 import config
-from config import configure_settings
+from groq_settings import get_groq_key, set_groq_key
 from monitor import start_watchdog, stop_watchdog, ignore_next_event
 from schemas import ChatRequest, NoteCreateRequest, NoteUpdateRequest, NoteRenameRequest
 from vault_settings import get_vault_path, set_vault_path
@@ -18,6 +18,10 @@ from services.notes_service import analyze_notes, reindex_notes, list_notes, get
 
 class VaultPathRequest(BaseModel):
     path: str
+
+
+class GroqKeyRequest(BaseModel):
+    key: str
 
 
 @asynccontextmanager
@@ -33,7 +37,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=r"^(http://localhost:5173|file://.*|null)$",
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type", "Authorization"],
+    allow_credentials=True,
 )
 
 
@@ -176,6 +181,20 @@ def post_vault_path_route(request: VaultPathRequest):
 @app.get("/vault/tree")
 def get_vault_tree():
     return get_file_tree()
+
+
+@app.get("/settings/groq-key")
+def get_groq_key_status():
+    return {"has_key": bool(get_groq_key())}
+
+
+@app.post("/settings/groq-key")
+def set_groq_key_route(request: GroqKeyRequest):
+    set_groq_key(request.key)
+    config.GROQ_API_KEY = request.key
+    config._settings_configured = False
+    reset_chat_engine()
+    return {"status": "Success"}
 
 
 if __name__ == "__main__":

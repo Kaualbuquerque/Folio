@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
-import { FolderOpen, Menu, Minus, Moon, Square, Sun, X } from 'lucide-react';
+import { FolderOpen, Key, Menu, Minus, Moon, Square, Sun, X } from 'lucide-react';
 
 interface TitleBarProps {
     isDark: boolean;
     toggleTheme: () => void;
     onVaultChangeStart: () => void;
     onVaultChanged: () => void;
+    onOpenGroqModal: () => void;
 }
 
-export default function TitleBar({ isDark, toggleTheme, onVaultChangeStart, onVaultChanged }: TitleBarProps) {
+export default function TitleBar({ isDark, toggleTheme, onVaultChangeStart, onVaultChanged, onOpenGroqModal }: TitleBarProps) {
     const [vaultName, setVaultName] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isChanging, setIsChanging] = useState(false);
@@ -74,6 +75,16 @@ export default function TitleBar({ isDark, toggleTheme, onVaultChangeStart, onVa
                         >
                             <FolderOpen size={14} className="opacity-50" />
                             Trocar cofre
+                        </button>
+                        <button
+                            onClick={() => {
+                                setIsMenuOpen(false);
+                                onOpenGroqModal();
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-[12px] text-foreground/70 hover:bg-surface-2 hover:text-foreground transition-colors text-left"
+                        >
+                            <Key size={14} className="opacity-50" />
+                            Adicionar chave da IA
                         </button>
                     </div>
                 )}
