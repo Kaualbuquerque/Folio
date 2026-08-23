@@ -2,3 +2,4 @@ data
 test_notes
 dist
 build
+groq_settings.json
