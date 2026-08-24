@@ -361,3 +361,63 @@ body {
     text-align: left;
     padding: 4px 10px !important;
 }
+
+/* ── Markdown chat (React Markdown) ──────────────────────────── */
+
+.markdown-message {
+    color: var(--color-foreground);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  
+  .markdown-message h1,
+  .markdown-message h2,
+  .markdown-message h3 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    margin-top: 0.8em;
+    margin-bottom: 0.4em;
+  }
+  
+  .markdown-message h1 { font-size: 1.5em; }
+  .markdown-message h2 { font-size: 1.3em; }
+  .markdown-message h3 { font-size: 1.15em; }
+  
+  .markdown-message p {
+    margin: 0.5em 0;
+  }
+  
+  .markdown-message ul,
+  .markdown-message ol {
+    padding-left: 1.4em;
+    margin: 0.5em 0;
+  }
+  
+  .markdown-message li {
+    margin: 0.2em 0;
+  }
+  
+  .markdown-message strong {
+    font-weight: 600;
+  }
+  
+  .markdown-message a {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+  
+  .markdown-message blockquote {
+    border-left: 2px solid var(--color-accent);
+    padding-left: 1em;
+    opacity: 0.8;
+    font-style: italic;
+  }
+
+  .markdown-inline-code {
+    background: var(--color-surface);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--color-accent);
+  }

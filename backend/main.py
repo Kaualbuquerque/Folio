@@ -3,25 +3,17 @@ from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
 import config
 from groq_settings import get_groq_key, set_groq_key
 from monitor import start_watchdog, stop_watchdog, ignore_next_event
-from schemas import ChatRequest, NoteCreateRequest, NoteUpdateRequest, NoteRenameRequest
+from schemas import ChatRequest, NoteCreateRequest, NoteUpdateRequest, NoteRenameRequest, VaultPathRequest, \
+    GroqKeyRequest
 from vault_settings import get_vault_path, set_vault_path
 from services.chat_service import ask, reset_chat_engine
 from services.notes_service import analyze_notes, reindex_notes, list_notes, get_note, create_note, update_note, \
     delete_note, rename_note, index_single_note, remove_note_from_index, get_file_tree
-
-
-class VaultPathRequest(BaseModel):
-    path: str
-
-
-class GroqKeyRequest(BaseModel):
-    key: str
 
 
 @asynccontextmanager

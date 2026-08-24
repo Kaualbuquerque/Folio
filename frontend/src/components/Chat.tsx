@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChatMessage, ChatProps } from "../types/chat";
 import { parseAIResponse } from "../utils/chatUtils";
-import { ArrowUp, Eraser, FileText} from "lucide-react";
+import { ArrowUp, Eraser, FileText } from "lucide-react";
 import UserMessage from "./UserMessage";
+import MarkdownMessage from "./MarkdownMessage";
 
 function getGreeting(): string {
     const hour = new Date().getHours();
@@ -11,7 +12,7 @@ function getGreeting(): string {
     return 'Boa noite.';
 }
 
-export default function Chat({onNoteSelect }: ChatProps) {
+export default function Chat({ onNoteSelect }: ChatProps) {
     const [history, setHistory] = useState<ChatMessage[]>([]);
     const [question, setQuestion] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -112,12 +113,10 @@ export default function Chat({onNoteSelect }: ChatProps) {
                                 {msg.role === 'user' ? (
                                     <UserMessage content={msg.content} />
                                 ) : (
-                                    <div className="flex flex-col gap-3 max-w-4xl text-justify">
-                                        {msg.content.split('\n').filter(line => line.trim() !== '').map((paragraph, i) => (
-                                            <p key={i} className="text-[14px] text-foreground leading-relaxed">
-                                                {paragraph}
-                                            </p>
-                                        ))}
+                                    <div className="flex flex-col gap-3 max-w-4xl">
+                                        <div className="bg-surface-2 border border-border-hairline rounded-2xl rounded-tl-sm px-4 py-3">
+                                            <MarkdownMessage content={msg.content} />
+                                        </div>
                                         {msg.sources && msg.sources.length > 0 && (
                                             <div className="flex flex-col gap-2">
                                                 <span className="text-[10px] uppercase tracking-[0.12em] text-foreground/40">

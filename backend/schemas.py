@@ -13,5 +13,14 @@ class NoteCreateRequest(BaseModel):
 class NoteUpdateRequest(BaseModel):
     content: str
 
+
 class NoteRenameRequest(BaseModel):
     new_title: str
+
+
+class VaultPathRequest(BaseModel):
+    path: str
+
+
+class GroqKeyRequest(BaseModel):
+    key: str
