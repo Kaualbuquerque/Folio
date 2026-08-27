@@ -11,6 +11,8 @@ export interface ParsedResponse {
 
 export interface ChatProps {
     onNoteSelect: (title: string) => void;
+    hasGroqKey: boolean | null;
+    onOpenGroqModal: () => void;
 }
 
 export interface UserMessageProps {

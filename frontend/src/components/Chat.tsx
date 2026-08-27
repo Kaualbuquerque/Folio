@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChatMessage, ChatProps } from "../types/chat";
 import { parseAIResponse } from "../utils/chatUtils";
-import { ArrowUp, Eraser, FileText } from "lucide-react";
+import { ArrowUp, Eraser, FileText, Key } from "lucide-react";
 import UserMessage from "./UserMessage";
 import MarkdownMessage from "./MarkdownMessage";
 
@@ -12,7 +12,7 @@ function getGreeting(): string {
     return 'Boa noite.';
 }
 
-export default function Chat({ onNoteSelect }: ChatProps) {
+export default function Chat({ onNoteSelect, hasGroqKey, onOpenGroqModal }: ChatProps) {
     const [history, setHistory] = useState<ChatMessage[]>([]);
     const [question, setQuestion] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +23,7 @@ export default function Chat({ onNoteSelect }: ChatProps) {
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [history])
+
 
     function handleSend() {
         if (!question.trim() || isLoading) return;
@@ -76,6 +77,28 @@ export default function Chat({ onNoteSelect }: ChatProps) {
         setHistory([]);
         setQuestion('');
         setIsLoading(false);
+    }
+
+    if (hasGroqKey === false) {
+        return (
+            <div className="h-full flex items-center justify-center bg-background px-6">
+                <div className="flex flex-col items-center gap-3 text-center max-w-sm">
+                    <div className="w-10 h-10 rounded-full bg-accent-soft flex items-center justify-center">
+                        <Key size={18} className="text-accent" />
+                    </div>
+                    <h3 className="font-serif text-lg text-foreground">Nenhuma chave configurada</h3>
+                    <p className="text-[13px] text-foreground/50 leading-relaxed">
+                        Para conversar com suas notas, configure sua chave de API da Groq.
+                    </p>
+                    <button
+                        onClick={onOpenGroqModal}
+                        className="mt-2 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-[13px]"
+                    >
+                        Adicionar chave
+                    </button>
+                </div>
+            </div>
+        )
     }
 
     return (

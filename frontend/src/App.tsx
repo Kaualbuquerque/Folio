@@ -16,6 +16,7 @@ import GroqKeyModal from './components/GroqKeyModal';
 export default function App() {
     const { isDark, toggleTheme } = useTheme();
     const [selectedNote, setSelectedNote] = useState<string | null>(null);
+    const [hasGroqKey, setHasGroqKey] = useState<boolean | null>(null);
     const [activePage, setActivePage] = useState<ActivePage>('home');
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isReindexing, setIsReindexing] = useState(false);
@@ -30,6 +31,12 @@ export default function App() {
         id: "vault-layout",
     });
 
+    function checkGroqKey() {
+        fetch('http://localhost:8000/settings/groq-key')
+            .then((r) => r.json())
+            .then((data) => setHasGroqKey(data.has_key));
+    }
+
     useEffect(() => {
         waitForBackend()
             .then(() => {
@@ -41,6 +48,8 @@ export default function App() {
                 if (data) setVaultName(data.name);
             })
             .catch(() => setBackendFailed(true));
+
+        checkGroqKey()
     }, []);
 
     function handleSaved() {
@@ -98,6 +107,7 @@ export default function App() {
                 <GroqKeyModal
                     onClose={() => setIsGroqModalOpen(false)}
                     onSaved={() => {
+                        checkGroqKey()
                     }}
                 />
             )}
@@ -137,6 +147,8 @@ export default function App() {
                         {activePage === 'chat' && (
                             <Chat
                                 onNoteSelect={setSelectedNote}
+                                hasGroqKey={hasGroqKey}
+                                onOpenGroqModal={() => setIsGroqModalOpen(true)}
                             />
                         )}
                         {activePage === 'home' && (
