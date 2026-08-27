@@ -3,8 +3,7 @@ import type { MarkdownEditorHandle, MarkdownEditorProps } from "../types/editor"
 import { EditorView, keymap } from "@codemirror/view";
 import { EditorState } from "@codemirror/state";
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
-import { languages } from '@codemirror/language-data'
+import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { syntaxHighlighting } from "@codemirror/language";
 import { liveMarkdownField } from "../lib/liveMarkdownPlugin";
 import { markdownHighlightStyle } from "../lib/markdownHighlight";
@@ -45,10 +44,9 @@ const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorProps>(
                     doc: value,
                     extensions: [
                         history(),
-                        keymap.of([...defaultKeymap, ...historyKeymap]),
+                        keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
                         markdown({
                             base: markdownLanguage,
-                            codeLanguages: languages,
                             extensions: [Table],
                         }),
                         syntaxHighlighting(markdownHighlightStyle),
