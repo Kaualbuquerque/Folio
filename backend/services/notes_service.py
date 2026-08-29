@@ -1,10 +1,12 @@
 import re
+
 import yaml
 import chromadb
 from datetime import date
 from pathlib import Path
 
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
+from send2trash import send2trash
 
 import config
 from config import configure_settings, get_vector_store, DATA_DIR, COLLECTION_NAME
@@ -189,7 +191,7 @@ def delete_note(title: str) -> dict | None:
     if file is None:
         return None
 
-    file.unlink()
+    send2trash(str(file))
     return {"title": title, "status": "deleted"}
 
 
@@ -254,12 +256,12 @@ def get_file_tree() -> dict:
 
             if entry.is_dir():
                 subtree = build_tree(entry)
-                if subtree["children"]:
-                    children.append({
-                        "type": "folder",
-                        "name": entry.name,
-                        "children": subtree["children"],
-                    })
+                children.append({
+                    "type": "folder",
+                    "name": entry.name,
+                    "path": str(entry.relative_to(notes_dir)),
+                    "children": subtree["children"],
+                })
             elif entry.suffix == ".md":
                 children.append({
                     "type": "file",
@@ -271,3 +273,24 @@ def get_file_tree() -> dict:
 
     tree = build_tree(notes_dir)
     return {"name": notes_dir.name, "children": tree["children"]}
+
+
+def create_folder(path: str) -> dict:
+    notes_dir = Path(config.NOTES_DIR)
+    folder_path = notes_dir / path
+
+    if folder_path.exists():
+        return {"error": "folder already exists"}
+
+    folder_path.mkdir(parents=True, exist_ok=True)
+    return {"path": path, "status": "created"}
+
+def delete_folder(path:str) -> dict | None:
+    notes_dir = Path(config.NOTES_DIR)
+    folder_path = notes_dir / path
+
+    if not folder_path.exists() or not folder_path.is_dir():
+        return None
+
+    send2trash(str(folder_path))
+    return {"path": path, "status": "deleted"}

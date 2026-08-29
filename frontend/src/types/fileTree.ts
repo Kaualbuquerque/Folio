@@ -9,7 +9,8 @@ export interface FileTreeFile {
 export interface FileTreeFolder {
     type: 'folder';
     name: string;
-    children: FileTreeFile[];
+    path: string;
+    children: FileTreeNode[];
 }
 
 export interface FileTree {
@@ -21,4 +22,5 @@ export interface TreeNodeProps {
     node: FileTreeNode;
     onNoteSelect: (title: string) => void;
     depth: number;
+    onDeleteFolder : (path: string) => void;
 }

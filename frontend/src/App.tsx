@@ -11,7 +11,7 @@ import type { ActivePage } from './types/pages';
 import FilterPage from './components/pages/FilterPage';
 import FileDrawer from './components/FileDrawer';
 import { waitForBackend } from './utils/waitForBackend';
-import GroqKeyModal from './components/GroqKeyModal';
+import GroqKeyModal from './components/modal/GroqKeyModal';
 
 export default function App() {
     const { isDark, toggleTheme } = useTheme();
@@ -137,6 +137,7 @@ export default function App() {
                                     fileTree={fileTree}
                                     onNoteSelect={setSelectedNote}
                                     onNewNote={() => setSelectedNote('__new__')}
+                                    onFolderCreated={refresh}
                                 />
                             </Panel>
                             <Separator className="w-px bg-border-hairline hover:bg-accent/40 transition-colors cursor-col-resize" />

@@ -24,3 +24,7 @@ class VaultPathRequest(BaseModel):
 
 class GroqKeyRequest(BaseModel):
     key: str
+
+
+class FolderCreateRequest(BaseModel):
+    path: str

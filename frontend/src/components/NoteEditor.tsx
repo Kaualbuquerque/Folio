@@ -160,10 +160,23 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
         <aside className="h-full bg-surface/30 border-l border-border-hairline flex flex-col">
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border-hairline">
-                <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/40">
-                    Editor de nota
-                </span>
+            <div className="flex items-center justify-between gap-5 px-6 py-4 border-b border-border-hairline">
+
+                {/* Title */}
+                <div className="w-full bg-surface px-6 pt-6 pb-3 rounded-md border border-border-hairline">
+                    <input
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="Título da nota"
+                        className="w-full bg-transparent font-serif text-2xl text-foreground placeholder:text-foreground/30 outline-none disabled:opacity-100"
+                    />
+                    {saveError && (
+                        <div className="flex items-center justify-center py-2 px-3 rounded-md bg-destructive/70">
+                            <p className="text-[12px] text-foreground font-bold">{saveError}</p>
+                        </div>
+                    )}
+                </div>
+
                 <div className="flex items-center gap-3">
                     <button
                         onClick={handleSave}
@@ -185,21 +198,6 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
                         <X size={16} onClick={handleSave} />
                     </button>
                 </div>
-            </div>
-
-            {/* Title */}
-            <div className="px-6 pt-6 pb-3 border-b border-border-hairline">
-                <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Título da nota"
-                    className="w-full bg-transparent font-serif text-2xl text-foreground placeholder:text-foreground/30 outline-none disabled:opacity-100"
-                />
-                {saveError && (
-                    <div className="flex items-center justify-center py-2 px-3 rounded-md bg-destructive/70">
-                        <p className="text-[12px] text-foreground font-bold">{saveError}</p>
-                    </div>
-                )}
             </div>
 
             {/* Metadata */}
@@ -242,7 +240,7 @@ export default function NoteEditor({ selectedNote, onClose, onSaved, onDeleted, 
             </div>
 
             {/* Body */}
-            <div className="flex-1 py-4 overflow-hidden">
+            <div className="flex-1 p-2 overflow-hidden">
                 <MarkdownEditor
                     ref={markdownEditorRef}
                     value={content}
