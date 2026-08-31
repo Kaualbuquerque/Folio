@@ -16,10 +16,11 @@ function countFiles(node: FileTreeNode): number {
     return node.children.reduce((sum, child) => sum + countFiles(child), 0);
 }
 
-function TreeNode({ node, onNoteSelect, depth, onDeleteFolder }: TreeNodeProps) {
+function TreeNode({ node, onNoteSelect, depth, onDeleteFolder, onMoveItem }: TreeNodeProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+    const [isDragOver, setIsDragOver] = useState(false);
 
     function handleContextMenu(e: React.MouseEvent) {
         e.preventDefault();
@@ -38,9 +39,39 @@ function TreeNode({ node, onNoteSelect, depth, onDeleteFolder }: TreeNodeProps) 
         }
     }
 
+    function handleDragStart(e: React.DragEvent) {
+        e.dataTransfer.setData('text/plain', node.path);
+        e.stopPropagation();
+    }
+
+    function handleDragOver(e: React.DragEvent) {
+        if (node.type !== 'folder') return;
+        e.preventDefault();
+        setIsDragOver(true);
+    }
+
+    function handleDragLeave() {
+        setIsDragOver(false);
+    }
+
+    function handleDrop(e: React.DragEvent) {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragOver(false);
+
+        if (node.type !== 'folder') return;
+
+        const sourcePath = e.dataTransfer.getData('text/plain');
+        if (!sourcePath || sourcePath === node.path) return;
+
+        onMoveItem(sourcePath, node.path);
+    }
+
     if (node.type === 'file') {
         return (
             <button
+                draggable
+                onDragStart={handleDragStart}
                 onClick={() => onNoteSelect(node.name)}
                 style={{ paddingLeft: `${depth * 14 + 8}px` }}
                 className="w-full flex items-center gap-2 py-1.5 pr-2 text-[13px] text-foreground/70 hover:bg-surface-2 hover:text-foreground rounded-md transition-colors text-left"
@@ -56,10 +87,16 @@ function TreeNode({ node, onNoteSelect, depth, onDeleteFolder }: TreeNodeProps) 
     return (
         <div>
             <button
+                draggable
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
                 onClick={() => setIsExpanded((prev) => !prev)}
                 onContextMenu={handleContextMenu}
                 style={{ paddingLeft: `${depth * 14 + 8}px` }}
-                className="w-full flex items-center gap-1.5 py-1.5 pr-2 text-[13px] text-foreground/80 hover:bg-surface-2 rounded-md transition-colors text-left"
+                className={`w-full flex items-center gap-1.5 py-1.5 pr-2 text-[13px] text-foreground/80 rounded-md transition-colors text-left
+                    ${isDragOver ? 'bg-accent-soft border border-accent/40' : 'hover:bg-surface-2'}`}
             >
                 {isExpanded ? <ChevronDown size={13} className="opacity-50" /> : <ChevronRight size={13} className="opacity-50" />}
                 <Folder size={13} className="opacity-50" />
@@ -91,7 +128,14 @@ function TreeNode({ node, onNoteSelect, depth, onDeleteFolder }: TreeNodeProps) 
             {isExpanded && (
                 <div>
                     {node.children.map((child, i) => (
-                        <TreeNode key={i} node={child} onNoteSelect={onNoteSelect} depth={depth + 1} onDeleteFolder={onDeleteFolder} />
+                        <TreeNode
+                            key={i}
+                            node={child}
+                            onNoteSelect={onNoteSelect}
+                            depth={depth + 1}
+                            onDeleteFolder={onDeleteFolder}
+                            onMoveItem={onMoveItem}
+                        />
                     ))}
                 </div>
             )}
@@ -118,6 +162,20 @@ export default function FileDrawer({ fileTree, onNoteSelect, onNewNote, onFolder
         })
             .then(() => onFolderCreated())
             .catch(() => alert('Não foi possível apagar a pasta'));
+    }
+
+    function handleMoveItem(sourcePath: string, destinationFolder: string) {
+        fetch('http://localhost:8000/vault/move', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ source_path: sourcePath, destination_folder: destinationFolder }),
+        })
+            .then((r) => {
+                if (!r.ok) throw new Error('Não foi possível mover o item');
+                return r.json();
+            })
+            .then(() => onFolderCreated())
+            .catch((err) => alert(err.message));
     }
 
     if (!fileTree) {
@@ -151,9 +209,24 @@ export default function FileDrawer({ fileTree, onNoteSelect, onNewNote, onFolder
                     </button>
                 </div>
             </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar py-2">
+            <div
+                className="flex-1 overflow-y-auto custom-scrollbar py-2"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                    e.preventDefault();
+                    const sourcePath = e.dataTransfer.getData('text/plain');
+                    if (sourcePath) handleMoveItem(sourcePath, '');
+                }}
+            >
                 {fileTree.children.map((node, i) => (
-                    <TreeNode key={i} node={node} onNoteSelect={onNoteSelect} depth={0} onDeleteFolder={handleDeleteFolder} />
+                    <TreeNode
+                        key={i}
+                        node={node}
+                        onNoteSelect={onNoteSelect}
+                        depth={0}
+                        onDeleteFolder={handleDeleteFolder}
+                        onMoveItem={handleMoveItem}
+                    />
                 ))}
             </div>
 

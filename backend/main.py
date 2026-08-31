@@ -9,11 +9,12 @@ import config
 from groq_settings import get_groq_key, set_groq_key
 from monitor import start_watchdog, stop_watchdog, ignore_next_event
 from schemas import ChatRequest, NoteCreateRequest, NoteUpdateRequest, NoteRenameRequest, VaultPathRequest, \
-    GroqKeyRequest, FolderCreateRequest
+    GroqKeyRequest, FolderCreateRequest, MoveItemRequest
 from vault_settings import get_vault_path, set_vault_path
 from services.chat_service import ask, reset_chat_engine
 from services.notes_service import analyze_notes, reindex_notes, list_notes, get_note, create_note, update_note, \
-    delete_note, rename_note, index_single_note, remove_note_from_index, get_file_tree, create_folder, delete_folder \
+    delete_note, rename_note, index_single_note, remove_note_from_index, get_file_tree, create_folder, delete_folder, \
+    move_item
 
 
 @asynccontextmanager
@@ -170,6 +171,34 @@ def post_vault_path_route(request: VaultPathRequest):
     return {"status": "Success", "path": request.path}
 
 
+@app.post("/vault/folder")
+def create_folder_route(request: FolderCreateRequest):
+    result = create_folder(request.path)
+
+    if "error" in result:
+        raise HTTPException(status_code=409, detail=result["error"])
+
+    return result
+
+
+@app.delete("/vault/folder")
+def delete_folder_route(path: str):
+    result = delete_folder(path)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Folder not found")
+
+    return result
+
+
+@app.post("/vault/move")
+def move_item_route(request: MoveItemRequest):
+    ignore_next_event(Path(request.source_path).stem)
+    result = move_item(request.source_path, request.destination_folder)
+    if "error" in result:
+        raise HTTPException(status_code=409, detail=result["error"])
+    return result
+
+
 @app.get("/vault/tree")
 def get_vault_tree():
     return get_file_tree()
@@ -188,24 +217,6 @@ def set_groq_key_route(request: GroqKeyRequest):
     reset_chat_engine()
     return {"status": "Success"}
 
-
-@app.post("/vault/folder")
-def create_folder_route(request: FolderCreateRequest):
-    result = create_folder(request.path)
-
-    if "error" in result:
-        raise HTTPException(status_code=409, detail=result["error"])
-
-    return result
-
-
-@app.delete("/vault/folder")
-def delete_folder_reute(path: str):
-    result = delete_folder(path)
-    if result is None:
-        raise HTTPException(status_code=404, detail="Folder not found")
-
-    return result
 
 if __name__ == "__main__":
     try:

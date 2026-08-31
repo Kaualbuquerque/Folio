@@ -28,3 +28,7 @@ class GroqKeyRequest(BaseModel):
 
 class FolderCreateRequest(BaseModel):
     path: str
+
+class MoveItemRequest(BaseModel):
+    source_path: str
+    destination_folder: str

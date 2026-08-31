@@ -213,6 +213,44 @@ def rename_note(old_title: str, new_title: str) -> dict | None:
     return {"old_title": old_title, "new_title": new_title, "status": "renamed"}
 
 
+def create_folder(path: str) -> dict:
+    notes_dir = Path(config.NOTES_DIR)
+    folder_path = notes_dir / path
+
+    if folder_path.exists():
+        return {"error": "folder already exists"}
+
+    folder_path.mkdir(parents=True, exist_ok=True)
+    return {"path": path, "status": "created"}
+
+
+def delete_folder(path: str) -> dict | None:
+    notes_dir = Path(config.NOTES_DIR)
+    folder_path = notes_dir / path
+
+    if not folder_path.exists() or not folder_path.is_dir():
+        return None
+
+    send2trash(str(folder_path))
+    return {"path": path, "status": "deleted"}
+
+
+def move_item(source_path: str, destination_folder: str) -> dict:
+    notes_dir = Path(config.NOTES_DIR)
+    source = notes_dir / source_path
+    dest_folder = notes_dir / destination_folder if destination_folder else notes_dir
+
+    if not source.exists():
+        return {"error": "Item not found"}
+
+    destination = dest_folder / source.name
+
+    if destination.exists():
+        return {"error": "An item with that name already exists in the destination."}
+
+    source.rename(destination)
+    return {"status": "moved", "new_path": str(destination.relative_to(notes_dir))}
+
 def index_single_note(title: str) -> None:
     configure_settings()
     _, chroma_collection, vector_store, storage_context = get_vector_store()
@@ -273,24 +311,3 @@ def get_file_tree() -> dict:
 
     tree = build_tree(notes_dir)
     return {"name": notes_dir.name, "children": tree["children"]}
-
-
-def create_folder(path: str) -> dict:
-    notes_dir = Path(config.NOTES_DIR)
-    folder_path = notes_dir / path
-
-    if folder_path.exists():
-        return {"error": "folder already exists"}
-
-    folder_path.mkdir(parents=True, exist_ok=True)
-    return {"path": path, "status": "created"}
-
-def delete_folder(path:str) -> dict | None:
-    notes_dir = Path(config.NOTES_DIR)
-    folder_path = notes_dir / path
-
-    if not folder_path.exists() or not folder_path.is_dir():
-        return None
-
-    send2trash(str(folder_path))
-    return {"path": path, "status": "deleted"}

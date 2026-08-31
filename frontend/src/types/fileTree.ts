@@ -23,4 +23,5 @@ export interface TreeNodeProps {
     onNoteSelect: (title: string) => void;
     depth: number;
     onDeleteFolder : (path: string) => void;
+    onMoveItem: (source: string, destination: string) => void;
 }
